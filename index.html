@@ -60,7 +60,7 @@
                     <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
                 </div>
 
-                <div id="list_pesanan_masuk" class="space-y-3 max-h-[250px] overflow-y-auto">
+                <div id="list_pesanan_masuk" class="space-y-3 max-h-[280px] overflow-y-auto">
                     <p class="text-center text-gray-400 font-semibold text-xs py-4">Memuat pesanan online...</p>
                 </div>
             </div>
@@ -111,7 +111,7 @@
         let keranjangKasir = [];
         let totalBelanjaKasir = 0;
         let kartuTerbuka = {};
-        let inputQtyState = {}; // MENGINGAT INPUT QTY AGAR TIDAK TER-RESET SAAT AUTO-SYNC
+        let inputQtyState = {}; 
         let jumlahPesananSebelumnya = -1;
         let isAudioAllowed = false;
         let isProcessingOrder = false;
@@ -222,7 +222,6 @@
                         let dimsumBaru = parseInt(resData.stokDimsumPcs || 0);
                         let tahuBaru = parseInt(resData.stokTahuPcs || 0);
 
-                        // Cek perubahan stok sebelum re-render untuk efisiensi
                         if (dimsumBaru !== stokDapurPcs.dimsum || tahuBaru !== stokDapurPcs.tahu || !document.getElementById("kontainer_kartu_menu").innerHTML) {
                             stokDapurPcs.dimsum = dimsumBaru;
                             stokDapurPcs.tahu = tahuBaru;
@@ -287,7 +286,7 @@
 
                 kartu.items.forEach((item, indexItem) => {
                     let idInput = `qty_${indexKartu}_${indexItem}`;
-                    let currentQty = inputQtyState[idInput] || 1; // Mempertahankan input qty terakhir
+                    let currentQty = inputQtyState[idInput] || 1;
                     let namaLengkap = `${kartu.namaKartu} - ${item.nama}`;
                     let porsiMaksimal = Math.floor(sisaPcsBahan / item.isiPcs);
                     let stokReady = porsiMaksimal > 0;
@@ -356,7 +355,6 @@
                 keranjangKasir.push({ nama: namaItem, harga: harga, qty: qtyInput });
             }
 
-            // Reset input qty setelah ditambah ke keranjang
             document.getElementById(idInput).value = 1;
             inputQtyState[idInput] = 1;
 
@@ -448,7 +446,7 @@
             let html = "";
             listOrders.forEach(order => {
                 html += `
-                    <div class="bg-white rounded-xl p-3 border border-amber-300 shadow-xs text-xs space-y-1.5">
+                    <div class="bg-white rounded-xl p-3 border border-amber-300 shadow-xs text-xs space-y-2">
                         <div class="flex justify-between items-start">
                             <div>
                                 <span class="font-black text-gray-900 block">${order.namaPelanggan}</span>
@@ -457,11 +455,19 @@
                             <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">PENDING</span>
                         </div>
                         <p class="font-semibold text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 text-[11px]">${order.produk}</p>
-                        <div class="flex justify-between items-center pt-1">
+                        
+                        <div class="flex justify-between items-center pt-1 border-t border-gray-100">
                             <span class="font-black text-amber-600">Rp ${Number(order.totalHarga).toLocaleString('id-ID')}</span>
-                            <button onclick="prosesSelesaikanOrder(${order.rowIndex}, this)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow cursor-pointer transition active:scale-95">
-                                ✅ SELESAI
-                            </button>
+                            
+                            <!-- TOMBOL AKSI: BATAL & SELESAI -->
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="prosesBatalkanOrder(${order.rowIndex}, this)" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg border border-red-200 cursor-pointer transition active:scale-95">
+                                    ❌ BATAL
+                                </button>
+                                <button onclick="prosesSelesaikanOrder(${order.rowIndex}, this)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow cursor-pointer transition active:scale-95">
+                                    ✅ SELESAI
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -476,7 +482,7 @@
             if (btnElement) {
                 btnElement.disabled = true;
                 btnElement.classList.add("opacity-50", "cursor-not-allowed");
-                btnElement.innerText = "⏳ Memproses...";
+                btnElement.innerText = "⏳...";
             }
 
             let payload = { action: "completeOrder", rowIndex: rowIndex };
@@ -509,6 +515,57 @@
                     btnElement.disabled = false;
                     btnElement.classList.remove("opacity-50", "cursor-not-allowed");
                     btnElement.innerText = "✅ SELESAI";
+                }
+            })
+            .finally(() => {
+                setTimeout(() => { isProcessingOrder = false; }, 1000);
+            });
+        }
+
+        // FUNGSI UNTUK MEMBATALKAN PESANAN ONLINE
+        function prosesBatalkanOrder(rowIndex, btnElement) {
+            if (isProcessingOrder) return;
+
+            if (!confirm("Apakah Anda yakin ingin membatalkan pesanan online ini?")) {
+                return;
+            }
+
+            isProcessingOrder = true;
+            if (btnElement) {
+                btnElement.disabled = true;
+                btnElement.classList.add("opacity-50", "cursor-not-allowed");
+                btnElement.innerText = "⏳...";
+            }
+
+            let payload = { action: "cancelOrder", rowIndex: rowIndex };
+
+            fetch(urlWebApp, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(resData => {
+                if (resData.status === "success") {
+                    tampilkanToast("❌ Pesanan online dibatalkan!", "bg-red-600");
+                    if (jumlahPesananSebelumnya > 0) jumlahPesananSebelumnya--;
+                    syncSemuaData();
+                } else {
+                    alert("Gagal membatalkan pesanan: " + (resData.message || "Terjadi kesalahan"));
+                    if (btnElement) {
+                        btnElement.disabled = false;
+                        btnElement.classList.remove("opacity-50", "cursor-not-allowed");
+                        btnElement.innerText = "❌ BATAL";
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("Gagal koneksi ke server!");
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.classList.remove("opacity-50", "cursor-not-allowed");
+                    btnElement.innerText = "❌ BATAL";
                 }
             })
             .finally(() => {
