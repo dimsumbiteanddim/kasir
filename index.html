@@ -106,15 +106,15 @@
 
     <!-- SCRIPT LOGIKA POS -->
     <script>
-        // PASTIIN PASTE URL WEB APP BARU DARI GOOGLE APPS SCRIPT DI SINI:
         const urlWebApp = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec";
 
         let keranjangKasir = [];
         let totalBelanjaKasir = 0;
         let kartuTerbuka = {};
+        let inputQtyState = {}; // MENGINGAT INPUT QTY AGAR TIDAK TER-RESET SAAT AUTO-SYNC
         let jumlahPesananSebelumnya = -1;
         let isAudioAllowed = false;
-        let isProcessingOrder = false; // Lock Mencegah Double Click
+        let isProcessingOrder = false;
 
         let stokDapurPcs = { dimsum: 100, tahu: 100 };
 
@@ -174,9 +174,8 @@
         ];
 
         window.onload = function() {
-            renderKartuMenu();
             syncSemuaData();
-            setInterval(syncSemuaData, 3000); // Sync Tiap 3 Detik
+            setInterval(syncSemuaData, 3000);
         };
 
         function aktifkanSuara() {
@@ -220,9 +219,15 @@
                 .then(res => res.json())
                 .then(resData => {
                     if (resData) {
-                        stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
-                        stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
-                        renderKartuMenu();
+                        let dimsumBaru = parseInt(resData.stokDimsumPcs || 0);
+                        let tahuBaru = parseInt(resData.stokTahuPcs || 0);
+
+                        // Cek perubahan stok sebelum re-render untuk efisiensi
+                        if (dimsumBaru !== stokDapurPcs.dimsum || tahuBaru !== stokDapurPcs.tahu || !document.getElementById("kontainer_kartu_menu").innerHTML) {
+                            stokDapurPcs.dimsum = dimsumBaru;
+                            stokDapurPcs.tahu = tahuBaru;
+                            renderKartuMenu();
+                        }
                         document.getElementById("stok_status").innerText = `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
                     }
                 }).catch(e => console.log("Error sync stok", e));
@@ -282,6 +287,7 @@
 
                 kartu.items.forEach((item, indexItem) => {
                     let idInput = `qty_${indexKartu}_${indexItem}`;
+                    let currentQty = inputQtyState[idInput] || 1; // Mempertahankan input qty terakhir
                     let namaLengkap = `${kartu.namaKartu} - ${item.nama}`;
                     let porsiMaksimal = Math.floor(sisaPcsBahan / item.isiPcs);
                     let stokReady = porsiMaksimal > 0;
@@ -303,7 +309,7 @@
                                 ${stokReady ? `
                                     <div class="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden h-7">
                                         <button onclick="kurangQty('${idInput}')" class="px-2 h-full font-black text-xs">-</button>
-                                        <input type="number" id="${idInput}" value="1" readonly class="w-full text-center font-extrabold text-xs bg-white">
+                                        <input type="number" id="${idInput}" value="${currentQty}" readonly class="w-full text-center font-extrabold text-xs bg-white">
                                         <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs">+</button>
                                     </div>
                                     <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}', ${porsiMaksimal})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95">
@@ -323,13 +329,21 @@
         function tambahQty(id, max) {
             let el = document.getElementById(id);
             let val = parseInt(el.value || 1);
-            if (val < max) el.value = val + 1;
+            if (val < max) {
+                let newVal = val + 1;
+                el.value = newVal;
+                inputQtyState[id] = newVal;
+            }
         }
 
         function kurangQty(id) {
             let el = document.getElementById(id);
             let val = parseInt(el.value || 1);
-            if (val > 1) el.value = val - 1;
+            if (val > 1) {
+                let newVal = val - 1;
+                el.value = newVal;
+                inputQtyState[id] = newVal;
+            }
         }
 
         function tambahKeKeranjangKasir(namaItem, harga, idInput, maxStok) {
@@ -341,7 +355,11 @@
             } else {
                 keranjangKasir.push({ nama: namaItem, harga: harga, qty: qtyInput });
             }
+
+            // Reset input qty setelah ditambah ke keranjang
             document.getElementById(idInput).value = 1;
+            inputQtyState[idInput] = 1;
+
             renderKeranjangKasir();
         }
 
@@ -364,7 +382,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="font-extrabold text-gray-800">Rp ${subtotal.toLocaleString('id-ID')}</span>
-                                <button onclick="keranjangKasir.splice(${index},1); renderKeranjangKasir();" class="text-red-500 font-bold text-xs">✕</button>
+                                <button onclick="keranjangKasir.splice(${index},1); renderKeranjangKasir();" class="text-red-500 font-bold text-xs cursor-pointer">✕</button>
                             </div>
                         </div>
                     `;
@@ -451,7 +469,6 @@
             container.innerHTML = html;
         }
 
-        // FUNGSI SELESAIKAN ORDERAN ONLINE (DENGAN LOCK UNTUK MENCEGAH DOUBLE CLICK)
         function prosesSelesaikanOrder(rowIndex, btnElement) {
             if (isProcessingOrder) return;
             
