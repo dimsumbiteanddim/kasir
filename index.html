@@ -3,117 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Kasir POS - Bite & Dim</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
+    <title>Kasir - BITE AND DIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-900 pb-10">
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
 
-    <!-- HEADER KASIR -->
-    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-30">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🖥️</span>
-                <div>
-                    <h1 class="font-black text-sm sm:text-lg">KASIR POS - BITE & DIM</h1>
-                    <p class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Sync Dapur & Pesanan Online
-                    </p>
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-amber-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold">POS Kasir - BITE AND DIM</h1>
+            <p class="text-xs text-amber-100">Sistem Pencatatan Transaksi Kasir</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="indikator-status" class="text-xs bg-emerald-500 px-2 py-1 rounded text-white font-medium">Sistem Siap</span>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- KOLOM KIRI & TENGAH: DAFTAR MENU -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-700">Daftar Menu Produk</h2>
+                <div class="text-sm text-gray-500">
+                    Stok Dimsum: <strong id="stok-dimsum-text" class="text-amber-600">0</strong> pcs | 
+                    Stok Tahu: <strong id="stok-tahu-text" class="text-amber-800">0</strong> pcs
                 </div>
             </div>
-            <button id="btn_aktifkan_suara" onclick="aktifkanSuara()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer">
-                🔔 Aktifkan Suara Notif
-            </button>
-        </div>
-    </div>
 
-    <!-- MAIN CONTENT GRID -->
-    <div class="container mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
-        <!-- SISI KIRI (2 KOLOM): INPUT PESANAN OFFLINE (KARTU MENU) -->
-        <div class="lg:col-span-2 space-y-4">
-            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200">
-                <h2 class="text-base font-black text-gray-800">🍽️ Kartu Menu (Order Offline / Dine In)</h2>
-                <span id="stok_status" class="text-xs text-amber-600 font-bold">Sync Stok Dapur...</span>
+            <!-- CONTAINER KARTU MENU -->
+            <div id="container-menu" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Kartu menu di-render via Javascript -->
             </div>
-
-            <!-- KONTAINER KARTU MENU KASIR -->
-            <div id="kontainer_kartu_menu" class="space-y-4"></div>
         </div>
 
-        <!-- SISI KANAN (1 KOLOM): KERANJANG KASIR & NOTIF ONLINE -->
-        <div class="space-y-5">
-            
-            <!-- 📥 TAB PESANAN ONLINE MASUK -->
-            <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-400 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-amber-200 pb-2">
-                    <h2 class="text-sm font-black text-amber-900 flex items-center gap-2">
-                        <span>📲 Pesanan Online Masuk</span>
-                        <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
-                    </h2>
-                    <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
-                </div>
-
-                <div id="list_pesanan_masuk" class="space-y-3 max-h-[250px] overflow-y-auto">
-                    <p class="text-center text-gray-400 font-semibold text-xs py-4">Memuat pesanan online...</p>
-                </div>
-            </div>
-
-            <!-- 🛒 KERANJANG TRANSAKSI OFFLINE KASIR -->
-            <div class="bg-white p-4 shadow-md border border-gray-200 rounded-2xl sticky top-20 space-y-3">
-                <h2 class="text-base font-black border-b pb-2 text-black flex items-center justify-between">
-                    <span>🛒 Keranjang Kasir</span>
-                    <span class="text-xs font-bold text-gray-400">Offline/Dine-In</span>
-                </h2>
+        <!-- KOLOM KANAN: KERANJANG & TRANSAKSI -->
+        <div class="space-y-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 sticky top-20">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-3 mb-4">Keranjang Transaksi</h2>
                 
-                <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-200 space-y-2">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-700 mb-0.5">Nama Pelanggan</label>
-                            <input type="text" id="kasir_nama" placeholder="Dine In / Nama" class="w-full border border-gray-300 p-2 rounded-lg text-xs font-semibold bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-700 mb-0.5">No. WA (Opsional)</label>
-                            <input type="tel" id="kasir_hp" placeholder="08xxx" class="w-full border border-gray-300 p-2 rounded-lg text-xs font-semibold bg-white">
-                        </div>
+                <!-- INPUT DATA PELANGGAN -->
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Pelanggan / Catatan</label>
+                        <input type="text" id="kasir_pelanggan" placeholder="Pelanggan Umum" value="Pelanggan Umum" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor WA (Opsional)</label>
+                        <input type="number" id="kasir_wa" placeholder="08xxx / -" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
 
-                <div id="elemen_keranjang_kasir" class="space-y-2 max-h-[160px] overflow-y-auto border-b pb-2 text-xs">
-                    <p class="text-gray-400 text-center text-xs py-2">Belum ada menu dipilih.</p>
+                <!-- DAFTAR ITEM KERANJANG -->
+                <div id="container-keranjang" class="divide-y divide-gray-100 max-h-60 overflow-y-auto mb-4 border-t border-b py-2">
+                    <p class="text-sm text-gray-400 text-center py-4">Keranjang masih kosong</p>
                 </div>
 
-                <div class="space-y-3 pt-1">
-                    <div class="flex justify-between font-black text-base">
+                <!-- TOTAL & ACTION -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-base font-semibold">
+                        <span>Total Qty Item:</span>
+                        <span id="total-qty-text">0 pcs</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-bold text-amber-600 border-t pt-2">
                         <span>Total Bayar:</span>
-                        <span id="total_belanja_kasir" class="text-amber-600">Rp 0</span>
+                        <span id="total-bayar-text">Rp 0</span>
                     </div>
 
-                    <button onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-xs shadow-md cursor-pointer transition active:scale-95 text-center">
-                        💵 PROSES BAYAR & SELESAI
+                    <button onclick="prosesBayarKasir()" id="btn-bayar" disabled class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white font-bold py-3 rounded-xl shadow transition duration-200 text-center">
+                        Proses Transaksi Offline
                     </button>
                 </div>
             </div>
-
         </div>
+
     </div>
 
-    <!-- 🧠 LOGIKA KASIR HYBRID -->
+    <!-- SCRIPT JAVASCRIPT LOGIKA KASIR -->
     <script>
-        const urlWebApp = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec";
+        // URL WEB APP GOOGLE APPS SCRIPT KAMU
+        const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwqV5o9Gf3N_EXAMPLE/exec"; // ganti dengan URL Web App milikmu jika beda
 
-        let keranjangKasir = [];
-        let totalBelanjaKasir = 0;
-        let kartuTerbuka = {};
-        let jumlahPesananSebelumnya = 0;
-        let isAudioAllowed = false;
-
-        let stokDapurPcs = { dimsum: 100, tahu: 100 };
-
-        let daftarKartuMenu = [
+        // DATA DEKLARASI MENU
+        const daftarKartuMenu = [
             {
                 namaKartu: "Dimsum Original",
                 kategoriBahan: "dimsum",
@@ -153,7 +125,7 @@
                 temaWarna: "bg-teal-600 text-white",
                 items: [
                     { nama: "Paket Hemat", harga: 14000, desc: "Isi 3 pcs", isiPcs: 3 },
-                    { nama: "Paket Kenyang", harga: 23000, desc: "Isi 5 pcs", isiPcs: 5 },
+                    { nama: "Paket Kenyang", harga: 22000, desc: "Isi 5 pcs", isiPcs: 5 },
                     { nama: "Paket Ramean", harga: 35000, desc: "Isi 8 pcs", isiPcs: 8 }
                 ]
             },
@@ -168,256 +140,233 @@
             }
         ];
 
+        // MEMORI KASIR
+        let keranjangKasir = [];
+        let stokDapurPcs = { dimsum: 999, tahu: 999 };
+
+        // 1. KUNCI UTAMA SOLUSI: Objek penampung nilai Qty yang sedang diatur kasir
+        let inputQtyKartu = {}; 
+
         window.onload = function() {
-            renderKartuMenu();
-            syncSemuaData();
-            setInterval(syncSemuaData, 1000); // Sync Tiap 1 Detik
+            renderMenu();
+            ambilStokLive();
+            // Polling auto-refresh stok setiap 5 detik
+            setInterval(ambilStokLive, 5000); 
         };
 
-        function aktifkanSuara() {
-            isAudioAllowed = true;
-            bunyikanNotifikasiSuara("Suara notifikasi kasir aktif!");
-            let btn = document.getElementById("btn_aktifkan_suara");
-            btn.innerText = "🔊 Suara Aktif";
-            btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
-        }
-
-        function bunyikanNotifikasiSuara(teks) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let ucapan = new SpeechSynthesisUtterance(teks);
-                ucapan.lang = 'id-ID';
-                ucapan.rate = 1.0;
-                window.speechSynthesis.speak(ucapan);
-            }
-        }
-
-        function syncSemuaData() {
-            // 1. Sync Live Stok Dapur
-            fetch(urlWebApp)
-                .then(res => res.json())
-                .then(resData => {
-                    if (resData) {
-                        stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
-                        stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
-                        renderKartuMenu();
-                        document.getElementById("stok_status").innerText = `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
-                    }
-                }).catch(e => console.log("Error sync stok", e));
-
-            // 2. Sync Pesanan Online Pending
-            fetch(`${urlWebApp}?action=getPendingOrders`)
+        // AMBIL STOK LIVE DARIPADA RE-RENDER ULANG LENGKAP
+        function ambilStokLive() {
+            fetch(URL_WEB_APP)
                 .then(res => res.json())
                 .then(data => {
-                    renderPesananOnline(data);
-                    if (data.length > jumlahPesananSebelumnya && isAudioAllowed) {
-                        bunyikanNotifikasiSuara("Ada pesanan masuk!");
+                    if (data) {
+                        stokDapurPcs.dimsum = data.stokDimsumPcs || 0;
+                        stokDapurPcs.tahu = data.stokTahuPcs || 0;
+
+                        document.getElementById('stok-dimsum-text').innerText = stokDapurPcs.dimsum;
+                        document.getElementById('stok-tahu-text').innerText = stokDapurPcs.tahu;
+                        
+                        // Re-render menu saat auto refresh
+                        renderMenu();
                     }
-                    jumlahPesananSebelumnya = data.length;
-                    document.getElementById("badge_total_online").innerText = data.length;
-                }).catch(e => console.log("Error sync online", e));
+                })
+                .catch(err => console.log("Gagal sync stok:", err));
         }
 
-        function toggleKartu(idIsi, idPanah, indexKartu) {
-            const elIsi = document.getElementById(idIsi);
-            const elPanah = document.getElementById(idPanah);
-            if (elIsi.classList.contains("hidden")) {
-                elIsi.classList.remove("hidden");
-                elPanah.innerText = "▲";
-                kartuTerbuka[indexKartu] = true;
-            } else {
-                elIsi.classList.add("hidden");
-                elPanah.innerText = "▼";
-                kartuTerbuka[indexKartu] = false;
-            }
-        }
+        // RENDER MENU UTAMA
+        function renderMenu() {
+            const container = document.getElementById('container-menu');
+            let html = '';
 
-        function renderKartuMenu() {
-            let html = "";
-            daftarKartuMenu.forEach((kartu, indexKartu) => {
-                let idIsiKartu = `isi_kartu_${indexKartu}`;
-                let idPanahKartu = `panah_kartu_${indexKartu}`;
-                let sisaPcsBahan = stokDapurPcs[kartu.kategoriBahan] || 0;
-                let isOpen = kartuTerbuka[indexKartu] === true;
-
+            daftarKartuMenu.forEach((kartu) => {
                 html += `
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                        <button type="button" onclick="toggleKartu('${idIsiKartu}', '${idPanahKartu}', ${indexKartu})" class="w-full ${kartu.temaWarna} px-4 py-3 flex justify-between items-center cursor-pointer select-none text-left">
-                            <h3 class="font-black text-sm tracking-wide">📦 ${kartu.namaKartu}</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">${kartu.items.length} opsi</span>
-                                <span id="${idPanahKartu}" class="text-xs font-bold">${isOpen ? '▲' : '▼'}</span>
-                            </div>
-                        </button>
-
-                        <div id="${idIsiKartu}" class="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 ${isOpen ? '' : 'hidden'} border-t border-gray-100">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="${kartu.temaWarna} px-4 py-2 font-bold text-sm">
+                            ${kartu.namaKartu}
+                        </div>
+                        <div class="p-3 divide-y divide-gray-100">
                 `;
 
-                kartu.items.forEach((item, indexItem) => {
-                    let idInput = `qty_${indexKartu}_${indexItem}`;
-                    let namaLengkap = `${kartu.namaKartu} - ${item.nama}`;
-                    let porsiMaksimal = Math.floor(sisaPcsBahan / item.isiPcs);
-                    let stokReady = porsiMaksimal > 0;
+                kartu.items.forEach((item) => {
+                    // Unique Key untuk setiap pilihan produk
+                    let keyItem = `${kartu.namaKartu} - ${item.nama}`;
+                    
+                    // MEMBACA NILAI SEMENTARA: Jika kasir pernah ubah ke 4, pakai 4. Jika belum ada, default 1.
+                    let qtySaatIni = inputQtyKartu[keyItem] || 1;
 
                     html += `
-                        <div class="border border-gray-100 bg-gray-50/50 rounded-xl p-2.5 flex flex-col justify-between ${!stokReady ? 'opacity-50' : ''}">
+                        <div class="py-2.5 flex items-center justify-between gap-2">
                             <div>
-                                <div class="flex justify-between items-start">
-                                    <span class="font-extrabold text-xs text-gray-800">${item.nama}</span>
-                                    <span class="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 py-0.5 rounded">${item.desc}</span>
-                                </div>
-                                <div class="mt-1 mb-2 flex justify-between items-center">
-                                    <span class="font-black text-xs text-amber-600">Rp ${item.harga.toLocaleString('id-ID')}</span>
-                                    <span class="text-[9px] font-bold ${stokReady ? 'text-gray-500' : 'text-red-500'}">Maks: ${porsiMaksimal}</span>
-                                </div>
+                                <div class="font-semibold text-sm text-gray-800">${item.nama}</div>
+                                <div class="text-xs text-gray-500">Rp ${item.harga.toLocaleString('id-ID')} (${item.desc})</div>
                             </div>
-
-                            <div class="space-y-1.5 mt-auto">
-                                ${stokReady ? `
-                                    <div class="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden h-7">
-                                        <button onclick="kurangQty('${idInput}')" class="px-2 h-full font-black text-xs">-</button>
-                                        <input type="number" id="${idInput}" value="1" readonly class="w-full text-center font-extrabold text-xs bg-white">
-                                        <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs">+</button>
-                                    </div>
-                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}', ${porsiMaksimal})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95">
-                                        + TAMBAH
-                                    </button>
-                                ` : `<div class="text-[10px] bg-red-100 text-red-600 font-bold py-1 text-center rounded">HABIS</div>`}
+                            
+                            <!-- KONTROL PENGATUR QTY (TIDAK AKAN BALIK KE 1 SAAT REFRESH) -->
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="ubahInputQty('${keyItem}', -1)" class="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-bold text-gray-700">-</button>
+                                
+                                <span id="qty-disp-${btoa(keyItem).replace(/=/g,'')}" class="w-8 text-center text-sm font-bold">${qtySaatIni}</span>
+                                
+                                <button onclick="ubahInputQty('${keyItem}', 1)" class="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-bold text-gray-700">+</button>
+                                
+                                <button onclick="tambahKeKeranjangKasir('${kartu.namaKartu}', '${item.nama}', ${item.harga}, ${item.isiPcs})" class="ml-1 bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm">
+                                    + Tambah
+                                </button>
                             </div>
                         </div>
                     `;
                 });
 
-                html += `</div></div>`;
-            });
-            document.getElementById("kontainer_kartu_menu").innerHTML = html;
-        }
-
-        function tambahQty(id, max) {
-            let el = document.getElementById(id);
-            let val = parseInt(el.value || 1);
-            if (val < max) el.value = val + 1;
-        }
-
-        function kurangQty(id) {
-            let el = document.getElementById(id);
-            let val = parseInt(el.value || 1);
-            if (val > 1) el.value = val - 1;
-        }
-
-        function tambahKeKeranjangKasir(namaItem, harga, idInput, maxStok) {
-            let qtyInput = parseInt(document.getElementById(idInput).value) || 1;
-            let idx = keranjangKasir.findIndex(x => x.nama === namaItem);
-
-            if (idx > -1) {
-                keranjangKasir[idx].qty += qtyInput;
-            } else {
-                keranjangKasir.push({ nama: namaItem, harga: harga, qty: qtyInput });
-            }
-            document.getElementById(idInput).value = 1;
-            renderKeranjangKasir();
-        }
-
-        function renderKeranjangKasir() {
-            let html = "";
-            totalBelanjaKasir = 0;
-
-            if (keranjangKasir.length === 0) {
-                html = `<p class="text-gray-400 text-center text-xs py-2">Belum ada menu dipilih.</p>`;
-            } else {
-                keranjangKasir.forEach((item, index) => {
-                    let subtotal = item.qty * item.harga;
-                    totalBelanjaKasir += subtotal;
-
-                    html += `
-                        <div class="flex justify-between items-center text-xs border-b pb-1">
-                            <div>
-                                <span class="font-bold text-gray-800 block">${item.nama}</span>
-                                <span class="text-[10px] text-gray-500">${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-extrabold text-gray-800">Rp ${subtotal.toLocaleString('id-ID')}</span>
-                                <button onclick="keranjangKasir.splice(${index},1); renderKeranjangKasir();" class="text-red-500 font-bold text-xs">✕</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            document.getElementById("elemen_keranjang_kasir").innerHTML = html;
-            document.getElementById("total_belanja_kasir").innerText = "Rp " + totalBelanjaKasir.toLocaleString('id-ID');
-        }
-
-        function prosesBayarKasir() {
-            if (keranjangKasir.length === 0) {
-                alert("Keranjang kasir masih kosong!");
-                return;
-            }
-
-            let nama = document.getElementById("kasir_nama").value.trim() || "Pelanggan Offline";
-            let hp = document.getElementById("kasir_hp").value.trim() || "-";
-
-            let payload = {
-                action: "directKasirOrder",
-                namaPelanggan: nama,
-                nomorWA: hp,
-                tipeOrder: "Dine In / Offline",
-                items: keranjangKasir.map(i => ({ produk: i.nama, qty: i.qty, subtotal: i.qty * i.harga }))
-            };
-
-            fetch(urlWebApp, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                alert("Transaksi Berhasil & Disimpan ke Sheet Penjualan!");
-                keranjangKasir = [];
-                renderKeranjangKasir();
-                document.getElementById("kasir_nama").value = "";
-                document.getElementById("kasir_hp").value = "";
-                syncSemuaData();
-            });
-        }
-
-        function renderPesananOnline(listOrders) {
-            let container = document.getElementById("list_pesanan_masuk");
-            if (!listOrders || listOrders.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 font-semibold text-xs py-3">☕ Tidak ada pesanan online pending.</p>`;
-                return;
-            }
-
-            let html = "";
-            listOrders.forEach(order => {
                 html += `
-                    <div class="bg-white rounded-xl p-3 border border-amber-300 shadow-xs text-xs space-y-1.5">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="font-black text-gray-900 block">${order.namaPelanggan}</span>
-                                <span class="text-[10px] text-emerald-600 font-bold">WA: ${order.nomorWA}</span>
-                            </div>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">PENDING</span>
-                        </div>
-                        <p class="font-semibold text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 text-[11px]">${order.produk}</p>
-                        <div class="flex justify-between items-center pt-1">
-                            <span class="font-black text-amber-600">Rp ${Number(order.totalHarga).toLocaleString('id-ID')}</span>
-                            <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow">
-                                ✅ SELESAI
-                            </button>
                         </div>
                     </div>
                 `;
             });
+
             container.innerHTML = html;
         }
 
-        function prosesSelesaikanOrder(rowIndex) {
-            let payload = { action: "completeOrder", rowIndex: rowIndex };
-            fetch(urlWebApp, {
+        // FUNGSI MENGUBAH ANGKA SEMENTARA (HANYA MERUBAH ANGKA PADA OBJEK DAN TEXT HTML SEMENTARA)
+        function ubahInputQty(keyItem, delta) {
+            if (!inputQtyKartu[keyItem]) {
+                inputQtyKartu[keyItem] = 1;
+            }
+
+            let nilBaru = inputQtyKartu[keyItem] + delta;
+            if (nilBaru < 1) nilBaru = 1; // Minimal 1
+
+            // Simpan nilai baru di memori sementara
+            inputQtyKartu[keyItem] = nilBaru;
+
+            // Langsung update elemen teks di layar tanpa merender ulang seluruh HTML menu
+            let safeId = "qty-disp-" + btoa(keyItem).replace(/=/g,'');
+            let elSpan = document.getElementById(safeId);
+            if (elSpan) {
+                elSpan.innerText = nilBaru;
+            }
+        }
+
+        // FUNGSI MEMASUKKAN BARANG KE KERANJANG
+        function tambahKeKeranjangKasir(namaKartu, namaItem, harga, isiPcs) {
+            let keyItem = `${namaKartu} - ${namaItem}`;
+            
+            // Ambil Qty pilihan kasir saat ini (misal 4)
+            let qtyDipilih = inputQtyKartu[keyItem] || 1;
+
+            // Masukkan / Update ke array keranjang
+            let itemAda = keranjangKasir.find(i => i.produk === keyItem);
+            if (itemAda) {
+                itemAda.qty += qtyDipilih;
+                itemAda.subtotal = itemAda.qty * harga;
+            } else {
+                keranjangKasir.push({
+                    produk: keyItem,
+                    harga: harga,
+                    qty: qtyDipilih,
+                    subtotal: harga * qtyDipilih,
+                    isiPcs: isiPcs
+                });
+            }
+
+            // RESET NILAI SEMENTARA HANYA SETELAH TOMBOL TAMBAH DIKLIK
+            inputQtyKartu[keyItem] = 1;
+
+            // Render ulang Tampilan
+            renderKeranjang();
+            renderMenu();
+        }
+
+        // RENDER TAMPILAN KERANJANG
+        function renderKeranjang() {
+            const container = document.getElementById('container-keranjang');
+            let totalBayar = 0;
+            let totalQty = 0;
+
+            if (keranjangKasir.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keranjang masih kosong</p>`;
+                document.getElementById('btn-bayar').disabled = true;
+                document.getElementById('total-qty-text').innerText = '0 pcs';
+                document.getElementById('total-bayar-text').innerText = 'Rp 0';
+                return;
+            }
+
+            let html = '';
+            keranjangKasir.forEach((item, index) => {
+                totalBayar += item.subtotal;
+                totalQty += item.qty;
+
+                html += `
+                    <div class="py-2 flex items-center justify-between text-sm">
+                        <div class="flex-1 pr-2">
+                            <div class="font-semibold text-gray-800">${item.produk}</div>
+                            <div class="text-xs text-gray-500">Rp ${item.harga.toLocaleString('id-ID')} x ${item.qty}</div>
+                        </div>
+                        <div class="font-bold text-gray-700 mr-3">
+                            Rp ${item.subtotal.toLocaleString('id-ID')}
+                        </div>
+                        <button onclick="hapusItemKeranjang(${index})" class="text-red-500 hover:text-red-700 font-bold text-base">
+                            &times;
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('total-qty-text').innerText = totalQty + ' Porsi';
+            document.getElementById('total-bayar-text').innerText = 'Rp ' + totalBayar.toLocaleString('id-ID');
+            document.getElementById('btn-bayar').disabled = false;
+        }
+
+        // HAPUS ITEM DARI KERANJANG
+        function hapusItemKeranjang(index) {
+            keranjangKasir.splice(index, 1);
+            renderKeranjang();
+        }
+
+        // PROSES BAYAR KE GOOGLE SHEETS
+        function prosesBayarKasir() {
+            if (keranjangKasir.length === 0) return;
+
+            const btn = document.getElementById('btn-bayar');
+            btn.disabled = true;
+            btn.innerText = "Memproses...";
+
+            const payload = {
+                action: "directKasirOrder",
+                namaPelanggan: document.getElementById('kasir_pelanggan').value.trim() || "Pelanggan Umum",
+                nomorWA: document.getElementById('kasir_wa').value.trim() || "-",
+                tipeOrder: "Offline Kasir",
+                items: keranjangKasir
+            };
+
+            fetch(URL_WEB_APP, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(payload)
-            }).then(() => {
-                if (isAudioAllowed) bunyikanNotifikasiSuara("Pesanan diselesaikan");
-                syncSemuaData();
+            })
+            .then(res => res.json())
+            .then(resData => {
+                if (resData.status === "success") {
+                    alert(`✅ Transaksi Berhasil!\nID: ${resData.idPesanan}`);
+                    
+                    // Reset Keranjang & Form
+                    keranjangKasir = [];
+                    document.getElementById('kasir_pelanggan').value = "Pelanggan Umum";
+                    document.getElementById('kasir_wa').value = "";
+                    
+                    renderKeranjang();
+                    ambilStokLive();
+                } else {
+                    alert("❌ Gagal menyimpan transaksi: " + resData.message);
+                }
+            })
+            .catch(err => {
+                alert("❌ Terjadi kesalahan koneksi.");
+                console.error(err);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Proses Transaksi Offline";
             });
         }
     </script>
