@@ -113,7 +113,7 @@
         let kartuTerbuka = {};
         let inputQtyState = {}; 
         let jumlahPesananSebelumnya = -1;
-        let isAudioAllowed = false;
+        let isAudioAllowed = true;
         let isProcessingOrder = false;
 
         let stokDapurPcs = { dimsum: 100, tahu: 100 };
@@ -179,12 +179,12 @@
         };
 
         function aktifkanSuara() {
-            isAudioAllowed = true;
-            bunyikanNotifikasiSuara("Suara notifikasi aktif!");
-            tampilkanToast("🔔 Suara Notifikasi Berhasil Diaktifkan!", "bg-emerald-600");
-            let btn = document.getElementById("btn_aktifkan_suara");
-            btn.innerText = "🔊 Suara Aktif";
-            btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
+           isAudioAllowed = true;
+    let btn = document.getElementById("btn_aktifkan_suara");
+    if (btn) {
+        btn.innerText = "🔊 Suara Aktif";
+        btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
+        }
         }
 
         function bunyikanNotifikasiSuara(teks) {
