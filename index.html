@@ -576,22 +576,39 @@
         }
     </script>
 
-   <!-- OneSignal Web Push SDK untuk Kasir -->
+  <!-- OneSignal Web SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+<!-- Skrip Pendaftaran Service Worker & Inisialisasi OneSignal -->
 <script>
+    // 1. Registrasi Service Worker PWA & OneSignal
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/OneSignalSDKWorker.js')
+                .then(function(registration) {
+                    console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
+                })
+                .catch(function(err) {
+                    console.error('Service Worker gagal didaftarkan:', err);
+                });
+        });
+    } else {
+        console.warn('Browser ini tidak mendukung Service Worker.');
+    }
+
+    // 2. Inisialisasi OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
             appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-            
-            // Arahkan lokasi Service Worker ke sw.js milik Anda
-            serviceWorkerPath: "/sw.js",
+            serviceWorkerPath: "OneSignalSDKWorker.js",
             serviceWorkerParam: { scope: "/" },
-            
             notifyButton: {
                 enable: true,
             },
         });
 
+        // Event listener saat pengguna berhasil berlangganan notifikasi
         OneSignal.User.PushSubscription.addEventListener("change", function(event) {
             if (event.current.id) {
                 OneSignal.User.addTag("role", "kasir");
