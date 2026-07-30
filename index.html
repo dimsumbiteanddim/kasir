@@ -581,16 +581,16 @@
         }
     </script>
 
-   <!-- Inisialisasi OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
           appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-          // Karena pakai URL Prefix, kita beri tahu lokasi Worker-nya relatif terhadap /kasir/
+          // Paksa path & scope mengarah ke subfolder /kasir/
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerParam: { scope: "/kasir/" },
+          allowLocalhostAsSecureOrigin: true,
           notifyButton: {
               enable: true,
           },
