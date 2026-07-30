@@ -575,21 +575,20 @@
     </script>
     
     <!-- OneSignal Web Push SDK untuk Kasir -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+      serviceWorkerPath: "OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/kasir/" }, // Mendaftarkan scope khusus folder kasir
       notifyButton: {
-        enable: true, // Lonceng untuk izinkan notifikasi
+        enable: true,
       },
     });
 
-    // Saat Kasir mengizinkan notifikasi, beri Tag khusus "role: kasir"
     OneSignal.User.PushSubscription.addEventListener("change", function(event) {
       if (event.current.id) {
-        // Menandai perangkat ini sebagai KASIR di OneSignal
         OneSignal.User.addTag("role", "kasir");
         console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
       }
