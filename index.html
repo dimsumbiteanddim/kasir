@@ -576,15 +576,16 @@
         }
     </script>
 
-  <!-- OneSignal Web SDK -->
+ <!-- OneSignal Web SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <!-- Skrip Pendaftaran Service Worker & Inisialisasi OneSignal -->
 <script>
-    // 1. Registrasi Service Worker PWA & OneSignal
+    // 1. Registrasi Service Worker PWA & OneSignal (Sesuai Subfolder /kasir/)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/OneSignalSDKWorker.js')
+            // Perhatikan awalan './' agar mencari relatif terhadap folder /kasir/
+            navigator.serviceWorker.register('./OneSignalSDKWorker.js', { scope: './' })
                 .then(function(registration) {
                     console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
                 })
@@ -602,13 +603,13 @@
         await OneSignal.init({
             appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
             serviceWorkerPath: "OneSignalSDKWorker.js",
-            serviceWorkerParam: { scope: "/" },
+            serviceWorkerParam: { scope: "./" }, // Ubah scope ke relatif/subfolder
             notifyButton: {
                 enable: true,
             },
         });
 
-        // Event listener saat pengguna berhasil berlangganan notifikasi
+        // Event listener saat pengguna berhasil berlangganan
         OneSignal.User.PushSubscription.addEventListener("change", function(event) {
             if (event.current.id) {
                 OneSignal.User.addTag("role", "kasir");
