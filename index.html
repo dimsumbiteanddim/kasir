@@ -573,5 +573,28 @@
             });
         }
     </script>
+    
+    <!-- OneSignal Web Push SDK untuk Kasir -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "PASTE_APP_ID_ONESIGNAL_KAMU_DI_SINI",
+      notifyButton: {
+        enable: true, // Lonceng untuk izinkan notifikasi
+      },
+    });
+
+    // Saat Kasir mengizinkan notifikasi, beri Tag khusus "role: kasir"
+    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+      if (event.current.id) {
+        // Menandai perangkat ini sebagai KASIR di OneSignal
+        OneSignal.User.addTag("role", "kasir");
+        console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+      }
+    });
+  });
+</script>
 </body>
 </html>
