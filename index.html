@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Kasir POS - Bite & Dim</title>
+    
+    <!-- Link Manifest PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- OneSignal SDK -->
+    
+    <!-- OneSignal SDK (Dipanggil 1 kali saja) -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -461,7 +468,6 @@
                         <div class="flex justify-between items-center pt-1 border-t border-gray-100">
                             <span class="font-black text-amber-600">Rp ${Number(order.totalHarga).toLocaleString('id-ID')}</span>
                             
-                            <!-- TOMBOL AKSI: BATAL & SELESAI -->
                             <div class="flex items-center gap-1.5">
                                 <button onclick="prosesBatalkanOrder(${order.rowIndex}, this)" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg border border-red-200 cursor-pointer transition active:scale-95">
                                     ❌ BATAL
@@ -524,7 +530,6 @@
             });
         }
 
-        // FUNGSI UNTUK MEMBATALKAN PESANAN ONLINE
         function prosesBatalkanOrder(rowIndex, btnElement) {
             if (isProcessingOrder) return;
 
@@ -576,43 +581,40 @@
         }
     </script>
 
-<!-- OneSignal Web SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <!-- Inisialisasi OneSignal & Service Worker -->
+    <script>
+        // Registrasi Service Worker PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./OneSignalSDKWorker.js', { scope: './' })
+                    .then(function(registration) {
+                        console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.error('Service Worker gagal didaftarkan:', err);
+                    });
+            });
+        }
 
-<script>
-    // 1. Registrasi Service Worker PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('./OneSignalSDKWorker.js', { scope: './' })
-                .then(function(registration) {
-                    console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
-                })
-                .catch(function(err) {
-                    console.error('Service Worker gagal didaftarkan:', err);
-                });
-        });
-    }
+        // Inisialisasi OneSignal
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+                serviceWorkerPath: "OneSignalSDKWorker.js",
+                serviceWorkerParam: { scope: "./" },
+                notifyButton: {
+                    enable: true,
+                },
+            });
 
-    // 2. Inisialisasi OneSignal (Khusus Subfolder GitHub Pages)
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-            appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-            serviceWorkerPath: "kasir/OneSignalSDKWorker.js",
-            serviceWorkerParam: { scope: "/kasir/" },
-            path: "/kasir/", // Memberitahu SDK bahwa posisi aplikasi ada di folder /kasir/
-            notifyButton: {
-                enable: true,
-            },
+            OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+                if (event.current.id) {
+                    OneSignal.User.addTag("role", "kasir");
+                    console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+                }
+            });
         });
-
-        OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-            if (event.current.id) {
-                OneSignal.User.addTag("role", "kasir");
-                console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
-            }
-        });
-    });
-</script>
+    </script>
 </body>
 </html>
