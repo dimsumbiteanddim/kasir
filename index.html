@@ -581,40 +581,41 @@
         }
     </script>
 
-    <!-- Inisialisasi OneSignal & Service Worker -->
-    <script>
-        // Registrasi Service Worker PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('./OneSignalSDKWorker.js', { scope: './' })
-                    .then(function(registration) {
-                        console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
-                    })
-                    .catch(function(err) {
-                        console.error('Service Worker gagal didaftarkan:', err);
-                    });
-            });
-        }
-
-        // Inisialisasi OneSignal
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(async function(OneSignal) {
-            await OneSignal.init({
-                appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-                serviceWorkerPath: "OneSignalSDKWorker.js",
-                serviceWorkerParam: { scope: "/kasir/" },
-                notifyButton: {
-                    enable: true,
-                },
-            });
-
-            OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-                if (event.current.id) {
-                    OneSignal.User.addTag("role", "kasir");
-                    console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
-                }
-            });
+   <!-- Inisialisasi OneSignal & Service Worker -->
+<script>
+    // 1. Registrasi Service Worker PWA khusus folder /kasir/
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('OneSignalSDKWorker.js', { scope: './' })
+                .then(function(registration) {
+                    console.log('Service Worker berhasil didaftarkan dengan scope:', registration.scope);
+                })
+                .catch(function(err) {
+                    console.error('Service Worker gagal didaftarkan:', err);
+                });
         });
-    </script>
+    }
+
+    // 2. Inisialisasi OneSignal
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+            appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+            // Tambahkan serviceWorkerParam agar OneSignal mencari worker di folder /kasir/
+            serviceWorkerPath: "OneSignalSDKWorker.js",
+            serviceWorkerParam: { scope: "/kasir/" },
+            notifyButton: {
+                enable: true,
+            },
+        });
+
+        OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+            if (event.current.id) {
+                OneSignal.User.addTag("role", "kasir");
+                console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+            }
+        });
+    });
+</script>
 </body>
 </html>
