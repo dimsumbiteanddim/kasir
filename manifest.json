@@ -3,12 +3,12 @@
   "name": "Sistem Kasir Bite & Dim",
   "icons": [
     {
-      "src": "Favicon.png",
+      "src": "favicon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "Favicon.png",
+      "src": "favicon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
