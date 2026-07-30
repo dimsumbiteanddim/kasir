@@ -1,6 +1,8 @@
 {
   "short_name": "Bite & Dim",
   "name": "Sistem Kasir Bite & Dim",
+  "id": "/kasir/",
+  "start_url": "./",
   "icons": [
     {
       "src": "favicon.png",
@@ -13,7 +15,6 @@
       "type": "image/png"
     }
   ],
-  "start_url": ".",
   "background_color": "#f3f4f6",
   "theme_color": "#f59e0b",
   "display": "standalone",
