@@ -44,11 +44,17 @@ self.addEventListener('activate', (event) => {
 
 // Event Fetch PWA (Agar PWA bisa dibuka offline)
 self.addEventListener('fetch', (event) => {
-  // Abaikan request ke API OneSignal / External agar tidak terbentur Cache
+  // 1. Abaikan request Non-GET (POST, PUT, DELETE, dll)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // 2. Abaikan request ke domain eksternal seperti OneSignal & Google
   if (event.request.url.includes('onesignal.com') || event.request.url.includes('google')) {
     return;
   }
 
+  // 3. Proses Caching untuk aset internal
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
