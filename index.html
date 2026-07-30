@@ -595,25 +595,30 @@
 
     <!-- ONESIGNAL INITIATION -->
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-          await OneSignal.init({
-              appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-              serviceWorkerPath: "/kasir/OneSignalSDKWorker.js",
-              serviceWorkerParam: { scope: "/kasir/" },
-              allowLocalhostAsSecureOrigin: true,
-              notifyButton: {
-                  enable: true,
-              },
-          });
+     window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+        appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+        serviceWorkerPath: "/kasir/OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/kasir/" },
+        allowLocalhostAsSecureOrigin: true,
+        notifyButton: { enable: true },
+    });
 
-          OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-              if (event.current.id) {
-                  OneSignal.User.addTag("role", "kasir");
-                  console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
-              }
-          });
-      });
+    // ✅ TAMBAHKAN BARIS INI: Memaksa browser menampilkan pop-up "Allow / Block" Notification
+    if (Notification.permission !== "granted") {
+        await OneSignal.Notifications.requestPermission();
+    }
+
+    // ✅ Langsung beri tag role kasir
+    OneSignal.User.addTag("role", "kasir");
+
+    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+        if (event.current.id) {
+            console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+        }
+    });
+});
     </script>
 </body>
 </html>
