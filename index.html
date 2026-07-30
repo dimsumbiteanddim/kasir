@@ -11,7 +11,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
-    <!-- OneSignal SDK (Dipanggil 1 kali saja) -->
+    <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
     <style>
@@ -36,7 +36,7 @@
                     </p>
                 </div>
             </div>
-            <button id="btn_aktifkan_suara" onclick="aktifkanSuara()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
+            <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
                 🔔 Aktifkan Suara Notif
             </button>
         </div>
@@ -122,7 +122,7 @@
         let kartuTerbuka = {};
         let inputQtyState = {}; 
         let jumlahPesananSebelumnya = -1;
-        let isAudioAllowed = true;
+        let isAudioAllowed = false;
         let isProcessingOrder = false;
 
         let stokDapurPcs = { dimsum: 100, tahu: 100 };
@@ -185,32 +185,28 @@
         window.onload = function() {
             syncSemuaData();
             setInterval(syncSemuaData, 3000);
+
+            // Listener otomatis sekali klik di mana saja untuk mengizinkan audio browser
+            document.addEventListener('click', pemicuSuaraOtomatis, { once: true });
+            document.addEventListener('touchstart', pemicuSuaraOtomatis, { once: true });
         };
 
-        function aktifkanSuara() {
+        function pemicuSuaraOtomatis() {
             if (!isAudioAllowed) {
-        isAudioAllowed = true;
-        // Bikin pemicu suara bisu untuk memancing izin dari browser
-        if ('speechSynthesis' in window) {
-            let pancingan = new SpeechSynthesisUtterance('');
-            window.speechSynthesis.speak(pancingan);
+                isAudioAllowed = true;
+                if ('speechSynthesis' in window) {
+                    let pancingan = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(pancingan);
+                }
+                console.log("Audio unlock otomatis via sentuhan pertama!");
+            }
         }
-        // Hapus event listener agar tidak jalan berulang-ulang
-        document.removeEventListener('click', pemicuSuaraOtomatis);
-        document.removeEventListener('touchstart', pemicuSuaraOtomatis);
-        console.log("Izin audio berhasil diaktifkan otomatis oleh interaksi pertama!");
-    }
-}
 
-// Tambahkan pemicu ke event onload
-window.onload = function() {
-    syncSemuaData();
-    setInterval(syncSemuaData, 3000);
-
-    // Pasang pendeteksi klik/sentuhan di mana saja di layar HP/Komputer
-    document.addEventListener('click', pemicuSuaraOtomatis);
-    document.addEventListener('touchstart', pemicuSuaraOtomatis);
-};
+        function aktifkanSuaraManual() {
+            isAudioAllowed = true;
+            bunyikanNotifikasiSuara("Suara notifikasi aktif");
+            tampilkanToast("🔔 Suara Notifikasi Diaktifkan!", "bg-amber-500 text-black");
+        }
 
         function bunyikanNotifikasiSuara(teks) {
             if (!isAudioAllowed) return;
@@ -332,11 +328,11 @@ window.onload = function() {
                             <div class="space-y-1.5 mt-auto">
                                 ${stokReady ? `
                                     <div class="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden h-7">
-                                        <button onclick="kurangQty('${idInput}')" class="px-2 h-full font-black text-xs">-</button>
+                                        <button onclick="kurangQty('${idInput}')" class="px-2 h-full font-black text-xs cursor-pointer hover:bg-gray-100">-</button>
                                         <input type="number" id="${idInput}" value="${currentQty}" readonly class="w-full text-center font-extrabold text-xs bg-white">
-                                        <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs">+</button>
+                                        <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs cursor-pointer hover:bg-gray-100">+</button>
                                     </div>
-                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}', ${porsiMaksimal})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95">
+                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}', ${porsiMaksimal})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95 cursor-pointer">
                                         + TAMBAH
                                     </button>
                                 ` : `<div class="text-[10px] bg-red-100 text-red-600 font-bold py-1 text-center rounded">HABIS</div>`}
@@ -597,28 +593,27 @@ window.onload = function() {
         }
     </script>
 
-   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-          appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-          // Paksa path & scope mengarah ke subfolder /kasir/
-          serviceWorkerPath: "OneSignalSDKWorker.js",
-          serviceWorkerParam: { scope: "/kasir/" },
-          allowLocalhostAsSecureOrigin: true,
-          notifyButton: {
-              enable: true,
-          },
-      });
+    <!-- ONESIGNAL INITIATION -->
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+          await OneSignal.init({
+              appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+              serviceWorkerPath: "OneSignalSDKWorker.js",
+              serviceWorkerParam: { scope: "/kasir/" },
+              allowLocalhostAsSecureOrigin: true,
+              notifyButton: {
+                  enable: true,
+              },
+          });
 
-      OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-          if (event.current.id) {
-              OneSignal.User.addTag("role", "kasir");
-              console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
-          }
+          OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+              if (event.current.id) {
+                  OneSignal.User.addTag("role", "kasir");
+                  console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+              }
+          });
       });
-  });
-</script>
+    </script>
 </body>
 </html>
