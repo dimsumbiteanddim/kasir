@@ -188,13 +188,29 @@
         };
 
         function aktifkanSuara() {
-            isAudioAllowed = true;
-            let btn = document.getElementById("btn_aktifkan_suara");
-            if (btn) {
-                btn.innerText = "🔊 Suara Aktif";
-                btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
-            }
+            if (!isAudioAllowed) {
+        isAudioAllowed = true;
+        // Bikin pemicu suara bisu untuk memancing izin dari browser
+        if ('speechSynthesis' in window) {
+            let pancingan = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(pancingan);
         }
+        // Hapus event listener agar tidak jalan berulang-ulang
+        document.removeEventListener('click', pemicuSuaraOtomatis);
+        document.removeEventListener('touchstart', pemicuSuaraOtomatis);
+        console.log("Izin audio berhasil diaktifkan otomatis oleh interaksi pertama!");
+    }
+}
+
+// Tambahkan pemicu ke event onload
+window.onload = function() {
+    syncSemuaData();
+    setInterval(syncSemuaData, 3000);
+
+    // Pasang pendeteksi klik/sentuhan di mana saja di layar HP/Komputer
+    document.addEventListener('click', pemicuSuaraOtomatis);
+    document.addEventListener('touchstart', pemicuSuaraOtomatis);
+};
 
         function bunyikanNotifikasiSuara(teks) {
             if (!isAudioAllowed) return;
