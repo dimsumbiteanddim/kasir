@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Kasir POS - Bite & Dim</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -179,12 +181,12 @@
         };
 
         function aktifkanSuara() {
-           isAudioAllowed = true;
-    let btn = document.getElementById("btn_aktifkan_suara");
-    if (btn) {
-        btn.innerText = "🔊 Suara Aktif";
-        btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
-        }
+            isAudioAllowed = true;
+            let btn = document.getElementById("btn_aktifkan_suara");
+            if (btn) {
+                btn.innerText = "🔊 Suara Aktif";
+                btn.className = "bg-emerald-500 text-white font-extrabold text-xs px-3 py-2 rounded-lg shadow";
+            }
         }
 
         function bunyikanNotifikasiSuara(teks) {
@@ -573,27 +575,27 @@
             });
         }
     </script>
-    
-    <!-- OneSignal Web Push SDK untuk Kasir -->
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-      serviceWorkerPath: "OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/kasir/" }, // Mendaftarkan scope khusus folder kasir
-      notifyButton: {
-        enable: true,
-      },
-    });
 
-    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-      if (event.current.id) {
-        OneSignal.User.addTag("role", "kasir");
-        console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
-      }
-    });
-  });
-</script>
+    <!-- OneSignal Web Push SDK untuk Kasir -->
+    <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
+                serviceWorkerPath: "OneSignalSDKWorker.js",
+                serviceWorkerParam: { scope: "/kasir/" },
+                notifyButton: {
+                    enable: true,
+                },
+            });
+
+            OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+                if (event.current.id) {
+                    OneSignal.User.addTag("role", "kasir");
+                    console.log("Perangkat ini telah didaftarkan sebagai KASIR!");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
