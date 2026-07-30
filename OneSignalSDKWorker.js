@@ -1,12 +1,8 @@
-// ===================================================
-// 1. IMPORT ONESIGNAL SERVICE WORKER (Wajib di Atas)
-// ===================================================
+// 1. Service Worker OneSignal
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-// ===================================================
-// 2. KODE PWA (OFFLINE CACHE & FETCH)
-// ===================================================
-const CACHE_NAME = 'biteanddim-v2'; // Naikkan versi cache jika update kodingan
+// 2. Kode PWA Offline milikmu
+const CACHE_NAME = 'biteanddim-v2';
 const ASSETS_TO_CACHE = [
   '/kasir/',
   '/kasir/index.html',
@@ -14,67 +10,36 @@ const ASSETS_TO_CACHE = [
   '/kasir/favicon.png'
 ];
 
-// Event Install PWA
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA] Membuka cache dan menyimpan aset');
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Event Activate PWA
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[PWA] Menghapus cache lama:', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) => 
+      Promise.all(keys.map((k) => k !== CACHE_NAME && caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
 
-// Event Fetch PWA (Network First, Fallback to Cache)
 self.addEventListener('fetch', (event) => {
-  // 1. Abaikan request Non-GET (POST, PUT, DELETE, dll)
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // 2. Abaikan request ke domain eksternal (OneSignal, Google, Apps Script)
+  if (event.request.method !== 'GET') return;
   const url = event.request.url;
-  if (
-    url.includes('onesignal.com') || 
-    url.includes('script.google.com') || 
-    url.includes('googleapis.com')
-  ) {
-    return;
-  }
+  if (url.includes('onesignal.com') || url.includes('script.google.com')) return;
 
-  // 3. Strategi Fetch: Utamakan Jaringan, jika offline gunakan Cache
   event.respondWith(
     fetch(event.request)
-      .then((networkResponse) => {
-        // Jika berhasil dapat data dari internet, perbarui cache secara dinamis
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+      .then((res) => {
+        if (res && res.status === 200) {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, resClone));
         }
-        return networkResponse;
+        return res;
       })
-      .catch(() => {
-        // Jika offline / koneksi terputus, ambil dari cache
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });
