@@ -581,14 +581,14 @@
         }
     </script>
 
-   <!-- Inisialisasi OneSignal & Service Worker -->
+   <!-- Inisialisasi OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  // 1. Inisialisasi OneSignal terlebih dahulu
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
           appId: "7f0a306b-451f-4a1c-81b5-ac1a99000b50",
-          // Pakai serviceWorkerParam agar OneSignal mendaftar HANYA di scope /kasir/
+          // Karena pakai URL Prefix, kita beri tahu lokasi Worker-nya relatif terhadap /kasir/
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerParam: { scope: "/kasir/" },
           notifyButton: {
@@ -603,19 +603,6 @@
           }
       });
   });
-
-  // 2. Registrasi Service Worker PWA (Cukup daftarkan OneSignalSDKWorker.js karena sudah mencakup PWA)
-  if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/kasir/OneSignalSDKWorker.js', { scope: '/kasir/' })
-              .then(function(registration) {
-                  console.log('Service Worker PWA/OneSignal aktif dengan scope:', registration.scope);
-              })
-              .catch(function(err) {
-                  console.error('Service Worker gagal didaftarkan:', err);
-              });
-      });
-  }
 </script>
 </body>
 </html>
