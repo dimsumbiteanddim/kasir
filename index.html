@@ -123,7 +123,7 @@
         let isAudioAllowed = false;
         let isProcessingOrder = false;
 
-        let stokDapurPcs = { dimsum: 0, tahu: 0 };
+        let stokDapurPcs = { stokDimsumPcs: 0, stokTahuPcs: 0 };
 
         let daftarKartuMenu = [
             {
@@ -233,23 +233,31 @@
 
         function syncSemuaData() {
             // 1. Sync Live Stok Dapur
-            fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
-                .then(res => res.json())
-                .then(resData => {
-                    if (resData && resData.status === "success") {
-                        stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
-                        stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
-                        
-                        document.getElementById("stok_status").innerText = 
-                            `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
-                        
-                        renderKartuMenu();
-                    }
-                })
-                .catch(e => {
-                    console.error("Gagal sync stok:", e);
-                    document.getElementById("stok_status").innerText = "Gagal Sync Stok";
-                });
+            // 1. Sync Live Stok Dapur
+fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
+    .then(res => res.json())
+    .then(resData => {
+        // Log untuk cek data yang masuk di Console Inspect Element
+        console.log("Data Stok dari Script:", resData); 
+
+        if (resData && resData.status === "success") {
+            // Ambil data stok dan simpan ke variabel
+            stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs) || 0;
+            stokDapurPcs.tahu = parseInt(resData.stokTahuPcs) || 0;
+            
+            document.getElementById("stok_status").innerText = 
+                `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+            
+            // Re-render kartu menu agar status HABIS berubah jadi angka stok
+            renderKartuMenu(); 
+        } else {
+            console.error("Respon stok error:", resData);
+        }
+    })
+    .catch(e => {
+        console.error("Gagal sync stok:", e);
+        document.getElementById("stok_status").innerText = "Gagal Sync Stok";
+    });
 
             // 2. Sync Pesanan Online Pending
             fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
