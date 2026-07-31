@@ -112,7 +112,7 @@
 
     <!-- SCRIPT LOGIKA POS -->
     <script>
-        // Ganti URL ini dengan Web App URL dari Deployment code.gs milikmu
+        // Web App URL Deployment Code.gs
         const urlWebApp = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec";
 
         let keranjangKasir = [];
@@ -123,7 +123,8 @@
         let isAudioAllowed = false;
         let isProcessingOrder = false;
 
-        let stokDapurPcs = { stokDimsumPcs: 100, stokTahuPcs: 100 };
+        // Deklarasi Variabel Stok Dapur
+        let stokDapurPcs = { dimsum: 0, tahu: 0 };
 
         let daftarKartuMenu = [
             {
@@ -183,7 +184,7 @@
         window.onload = function() {
             renderKartuMenu();
             syncSemuaData();
-            setInterval(syncSemuaData, 3000); // Sync tiap 3 detik
+            setInterval(syncSemuaData, 3000); // Sync berkala tiap 3 detik
 
             document.addEventListener('click', pemicuSuaraOtomatis, { once: true });
             document.addEventListener('touchstart', pemicuSuaraOtomatis, { once: true });
@@ -231,33 +232,34 @@
             }, 3000);
         }
 
+        // ==========================================
+        // FUNGSI LIVE SYNC DATA TERBARU
+        // ==========================================
         function syncSemuaData() {
             // 1. Sync Live Stok Dapur
-            // 1. Sync Live Stok Dapur
-fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
-    .then(res => res.json())
-    .then(resData => {
-        // Log untuk cek data yang masuk di Console Inspect Element
-        console.log("Data Stok dari Script:", resData); 
+            fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData && resData.status === "success") {
+                        let dimsumBaru = parseInt(resData.stokDimsumPcs) || 0;
+                        let tahuBaru = parseInt(resData.stokTahuPcs) || 0;
 
-        if (resData && resData.status === "success") {
-            // Ambil data stok dan simpan ke variabel
-            stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs) || 0;
-            stokDapurPcs.tahu = parseInt(resData.stokTahuPcs) || 0;
-            
-            document.getElementById("stok_status").innerText = 
-                `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
-            
-            // Re-render kartu menu agar status HABIS berubah jadi angka stok
-            renderKartuMenu(); 
-        } else {
-            console.error("Respon stok error:", resData);
-        }
-    })
-    .catch(e => {
-        console.error("Gagal sync stok:", e);
-        document.getElementById("stok_status").innerText = "Gagal Sync Stok";
-    });
+                        // Hanya update dan re-render UI jika stok benar-benar berubah
+                        if (stokDapurPcs.dimsum !== dimsumBaru || stokDapurPcs.tahu !== tahuBaru) {
+                            stokDapurPcs.dimsum = dimsumBaru;
+                            stokDapurPcs.tahu = tahuBaru;
+
+                            document.getElementById("stok_status").innerText = 
+                                `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+                            
+                            renderKartuMenu(); 
+                        }
+                    }
+                })
+                .catch(e => {
+                    console.error("Gagal sync stok:", e);
+                    document.getElementById("stok_status").innerText = "Gagal Sync Stok";
+                });
 
             // 2. Sync Pesanan Online Pending
             fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
@@ -266,7 +268,7 @@ fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
                     if (Array.isArray(data)) {
                         renderPesananOnline(data);
                         
-                        // Deteksi jika ada pesanan baru masuk
+                        // Deteksi jika ada pesanan baru yang masuk
                         if (jumlahPesananSebelumnya !== -1 && data.length > jumlahPesananSebelumnya) {
                             bunyikanNotifikasiSuara("Ada pesanan online masuk!");
                             tampilkanToast("📥 Pesanan Online Baru Masuk!", "bg-amber-500 text-black");
@@ -293,6 +295,9 @@ fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
             }
         }
 
+        // ==========================================
+        // FUNGSI RENDER MENU & KARTU KASIR
+        // ==========================================
         function renderKartuMenu() {
             let html = "";
             daftarKartuMenu.forEach((kartu, indexKartu) => {
@@ -320,6 +325,11 @@ fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
                     let namaLengkap = `${kartu.namaKartu} - ${item.nama}`;
                     let porsiMaksimal = Math.floor(sisaPcsBahan / item.isiPcs);
                     let stokReady = porsiMaksimal > 0;
+
+                    if (currentQty > porsiMaksimal && porsiMaksimal > 0) {
+                        currentQty = porsiMaksimal;
+                        inputQtyState[idInput] = porsiMaksimal;
+                    }
 
                     html += `
                         <div class="border border-gray-100 bg-gray-50/50 rounded-xl p-2.5 flex flex-col justify-between ${!stokReady ? 'opacity-50' : ''}">
@@ -420,6 +430,9 @@ fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
             document.getElementById("total_belanja_kasir").innerText = "Rp " + totalBelanjaKasir.toLocaleString('id-ID');
         }
 
+        // ==========================================
+        // PROSES BAYAR TRANSAKSI KASIR
+        // ==========================================
         function prosesBayarKasir() {
             if (keranjangKasir.length === 0) {
                 alert("Keranjang kasir masih kosong!");
@@ -470,6 +483,9 @@ fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
             });
         }
 
+        // ==========================================
+        // RENDER & MANAJEMEN PESANAN ONLINE
+        // ==========================================
         function renderPesananOnline(listOrders) {
             let container = document.getElementById("list_pesanan_masuk");
             if (!listOrders || listOrders.length === 0) {
