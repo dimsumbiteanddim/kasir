@@ -112,6 +112,7 @@
 
     <!-- SCRIPT LOGIKA POS -->
     <script>
+        // Ganti URL ini dengan Web App URL dari Deployment code.gs milikmu
         const urlWebApp = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec";
 
         let keranjangKasir = [];
@@ -121,7 +122,6 @@
         let jumlahPesananSebelumnya = -1;
         let isAudioAllowed = false;
         let isProcessingOrder = false;
-        let isFirstMenuRender = true;
 
         let stokDapurPcs = { dimsum: 0, tahu: 0 };
 
@@ -181,12 +181,10 @@
         ];
 
         window.onload = function() {
-            // Render kartu menu awal secara langsung agar antarmuka tidak kosong
             renderKartuMenu();
             syncSemuaData();
-            setInterval(syncSemuaData, 3000);
+            setInterval(syncSemuaData, 3000); // Sync tiap 3 detik
 
-            // Listener otomatis sekali klik di mana saja untuk mengizinkan audio browser
             document.addEventListener('click', pemicuSuaraOtomatis, { once: true });
             document.addEventListener('touchstart', pemicuSuaraOtomatis, { once: true });
         };
@@ -198,7 +196,6 @@
                     let pancingan = new SpeechSynthesisUtterance('');
                     window.speechSynthesis.speak(pancingan);
                 }
-                console.log("Audio unlock otomatis via sentuhan pertama!");
             }
         }
 
@@ -234,55 +231,44 @@
             }, 3000);
         }
 
-       function syncSemuaData() {
-    // Sync Live Stok
-    fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
-        .then(res => {
-            if (!res.ok) throw new Error("HTTP error " + res.status);
-            return res.json();
-        })
-        .then(resData => {
-            if (resData && resData.status !== "error") {
-                stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
-                stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
-                
-                document.getElementById("stok_status").innerText = 
-                    `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
-                
-                renderKartuMenu();
-            }
-        })
-        .catch(e => {
-            console.error("Gagal sync stok:", e);
-            document.getElementById("stok_status").innerText = "Gagal Sync Stok";
-        });
+        function syncSemuaData() {
+            // 1. Sync Live Stok Dapur
+            fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData && resData.status === "success") {
+                        stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
+                        stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
+                        
+                        document.getElementById("stok_status").innerText = 
+                            `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+                        
+                        renderKartuMenu();
+                    }
+                })
+                .catch(e => {
+                    console.error("Gagal sync stok:", e);
+                    document.getElementById("stok_status").innerText = "Gagal Sync Stok";
+                });
 
-    // Sync Pesanan Pending
-    fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
-        .then(res => res.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-                renderPesananOnline(data);
-            }
-        })
-        .catch(e => console.error("Gagal sync pesanan pending:", e));
-}
             // 2. Sync Pesanan Online Pending
-            fetch(`${urlWebApp}?action=getPendingOrders`)
+            fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
                 .then(res => res.json())
                 .then(data => {
                     if (Array.isArray(data)) {
                         renderPesananOnline(data);
                         
+                        // Deteksi jika ada pesanan baru masuk
                         if (jumlahPesananSebelumnya !== -1 && data.length > jumlahPesananSebelumnya) {
-                            bunyikanNotifikasiSuara("Ada pesanan masuk!");
+                            bunyikanNotifikasiSuara("Ada pesanan online masuk!");
                             tampilkanToast("📥 Pesanan Online Baru Masuk!", "bg-amber-500 text-black");
                         }
                         
                         jumlahPesananSebelumnya = data.length;
                         document.getElementById("badge_total_online").innerText = data.length;
                     }
-                }).catch(e => console.log("Error sync online", e));
+                })
+                .catch(e => console.error("Gagal sync online:", e));
         }
 
         function toggleKartu(idIsi, idPanah, indexKartu) {
@@ -347,7 +333,7 @@
                                         <input type="number" id="${idInput}" value="${currentQty}" readonly class="w-full text-center font-extrabold text-xs bg-white">
                                         <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs cursor-pointer hover:bg-gray-100">+</button>
                                     </div>
-                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}', ${porsiMaksimal})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95 cursor-pointer">
+                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}')" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95 cursor-pointer">
                                         + TAMBAH
                                     </button>
                                 ` : `<div class="text-[10px] bg-red-100 text-red-600 font-bold py-1 text-center rounded">HABIS</div>`}
@@ -381,7 +367,7 @@
             }
         }
 
-        function tambahKeKeranjangKasir(namaItem, harga, idInput, maxStok) {
+        function tambahKeKeranjangKasir(namaItem, harga, idInput) {
             let qtyInput = parseInt(document.getElementById(idInput).value) || 1;
             let idx = keranjangKasir.findIndex(x => x.nama === namaItem);
 
@@ -454,16 +440,20 @@
             })
             .then(res => res.json())
             .then(resData => {
-                bunyikanNotifikasiSuara("Transaksi kasir berhasil diselesaikan");
-                tampilkanToast("✅ Transaksi Kasir Disimpan!", "bg-emerald-600");
-                keranjangKasir = [];
-                renderKeranjangKasir();
-                document.getElementById("kasir_nama").value = "";
-                document.getElementById("kasir_hp").value = "";
-                syncSemuaData();
+                if (resData.status === "success") {
+                    bunyikanNotifikasiSuara("Transaksi kasir berhasil diselesaikan");
+                    tampilkanToast("✅ Transaksi Kasir Disimpan!", "bg-emerald-600");
+                    keranjangKasir = [];
+                    renderKeranjangKasir();
+                    document.getElementById("kasir_nama").value = "";
+                    document.getElementById("kasir_hp").value = "";
+                    syncSemuaData();
+                } else {
+                    alert("Gagal: " + resData.message);
+                }
             })
             .catch(err => {
-                console.log("Error:", err);
+                console.error("Error:", err);
                 alert("Gagal memproses transaksi offline!");
             })
             .finally(() => {
@@ -535,7 +525,7 @@
                     if (jumlahPesananSebelumnya > 0) jumlahPesananSebelumnya--;
                     syncSemuaData();
                 } else {
-                    alert("Gagal: " + (resData.message || "Pesanan mungkin sudah diproses"));
+                    alert("Gagal: " + (resData.message || "Pesanan gagal diperbarui"));
                     if (btnElement) {
                         btnElement.disabled = false;
                         btnElement.classList.remove("opacity-50", "cursor-not-allowed");
@@ -553,7 +543,7 @@
                 }
             })
             .finally(() => {
-                setTimeout(() => { isProcessingOrder = false; }, 1000);
+                setTimeout(() => { isProcessingOrder = false; }, 500);
             });
         }
 
@@ -603,7 +593,7 @@
                 }
             })
             .finally(() => {
-                setTimeout(() => { isProcessingOrder = false; }, 1000);
+                setTimeout(() => { isProcessingOrder = false; }, 500);
             });
         }
     </script>
