@@ -23,7 +23,7 @@
 
     <!-- HEADER KASIR -->
     <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-30">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-between items-center gap-2">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🖥️</span>
                 <div>
@@ -33,12 +33,20 @@
                     </p>
                 </div>
             </div>
-            <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
-                🔔 Aktifkan Suara Notif
-            </button>
+
+            <!-- TAMPILAN WIDGET OMZET HARIAN & TOMBOL SUARA -->
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-600/30 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-right">
+                    <p class="text-[9px] text-emerald-300 uppercase font-black tracking-wider">Omzet Hari Ini</p>
+                    <p id="label_omzet_harian" class="text-xs sm:text-sm font-black text-emerald-400">Rp 0</p>
+                </div>
+
+                <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
+                    🔔 Aktifkan Suara Notif
+                </button>
+            </div>
         </div>
     </div>
-
     <!-- MAIN CONTENT GRID -->
     <div class="container mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
         
@@ -242,7 +250,11 @@
                 .then(resData => {
                     if (resData && resData.status === "success") {
                         let dimsumBaru = parseInt(resData.stokDimsumPcs) || 0;
-                        let tahuBaru = parseInt(resData.stokTahuPcs) || 0;
+                        let tahuBaru = parseInt(resData.stokTahuPcs) || 0;\
+
+                        // --- TAMBAHAN KODE: UPDATE OMZET HARIAN KE HEADER ---
+                        let omzetHariIni = parseInt(resData.omzetHarian) || 0;
+                        document.getElementById("label_omzet_harian").innerText = "Rp " + omzetHariIni.toLocaleString('id-ID');
 
                         // Hanya update dan re-render UI jika stok benar-benar berubah
                         if (stokDapurPcs.dimsum !== dimsumBaru || stokDapurPcs.tahu !== tahuBaru) {
