@@ -234,28 +234,39 @@
             }, 3000);
         }
 
-        function syncSemuaData() {
-            // 1. Sync Live Stok Dapur
-            fetch(`${urlWebApp}?action=getStok`)
-                .then(res => res.json())
-                .then(resData => {
-                    if (resData) {
-                        let dimsumBaru = parseInt(resData.stokDimsumPcs || resData.dimsum || 0);
-                        let tahuBaru = parseInt(resData.stokTahuPcs || resData.tahu || 0);
+       function syncSemuaData() {
+    // Sync Live Stok
+    fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
+        .then(res => {
+            if (!res.ok) throw new Error("HTTP error " + res.status);
+            return res.json();
+        })
+        .then(resData => {
+            if (resData && resData.status !== "error") {
+                stokDapurPcs.dimsum = parseInt(resData.stokDimsumPcs || 0);
+                stokDapurPcs.tahu = parseInt(resData.stokTahuPcs || 0);
+                
+                document.getElementById("stok_status").innerText = 
+                    `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+                
+                renderKartuMenu();
+            }
+        })
+        .catch(e => {
+            console.error("Gagal sync stok:", e);
+            document.getElementById("stok_status").innerText = "Gagal Sync Stok";
+        });
 
-                        if (dimsumBaru !== stokDapurPcs.dimsum || tahuBaru !== stokDapurPcs.tahu || isFirstMenuRender) {
-                            stokDapurPcs.dimsum = dimsumBaru;
-                            stokDapurPcs.tahu = tahuBaru;
-                            isFirstMenuRender = false;
-                            renderKartuMenu();
-                        }
-                        document.getElementById("stok_status").innerText = `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
-                    }
-                }).catch(e => {
-                    console.log("Error sync stok", e);
-                    document.getElementById("stok_status").innerText = "Gagal Sync Stok";
-                });
-
+    // Sync Pesanan Pending
+    fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                renderPesananOnline(data);
+            }
+        })
+        .catch(e => console.error("Gagal sync pesanan pending:", e));
+}
             // 2. Sync Pesanan Online Pending
             fetch(`${urlWebApp}?action=getPendingOrders`)
                 .then(res => res.json())
