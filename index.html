@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aplikasi Kasir POS - Bite & Dim</title>
     
     <!-- Link Manifest PWA -->
@@ -16,107 +16,103 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<!-- Tambah padding bottom ekstra (pb-80 lg:pb-10) supaya menu paling bawah tidak tertutup oleh Floating Panel di HP -->
-<body class="bg-gray-100 min-h-screen text-gray-900 pb-85 lg:pb-10">
+<body class="bg-gray-100 h-screen w-screen overflow-hidden flex flex-col text-gray-900">
 
     <!-- NOTIFIKASI TOAST POP-UP -->
-    <div id="toast_container" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast_container" class="fixed top-16 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- HEADER KASIR -->
-    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-30">
+    <!-- HEADER KASIR (FIXED HEIGHT) -->
+    <div class="bg-slate-900 text-white p-2.5 sm:p-4 shadow-lg shrink-0 z-30">
         <div class="container mx-auto flex justify-between items-center gap-2">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🖥️</span>
+            <div class="flex items-center gap-2">
+                <span class="text-xl sm:text-2xl">🖥️</span>
                 <div>
-                    <h1 class="font-black text-sm sm:text-lg">KASIR POS - BITE & DIM</h1>
-                    <p class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Sync Dapur & Pesanan Online
+                    <h1 class="font-black text-xs sm:text-lg leading-tight">KASIR POS - BITE & DIM</h1>
+                    <p class="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Sync Dapur
                     </p>
                 </div>
             </div>
 
             <!-- TAMPILAN WIDGET OMZET HARIAN & TOMBOL SUARA -->
             <div class="flex items-center gap-2">
-                <div class="bg-emerald-600/30 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-right">
-                    <p class="text-[9px] text-emerald-300 uppercase font-black tracking-wider">Penjualan Hari Ini</p>
-                    <p id="label_omzet_harian" class="text-xs sm:text-sm font-black text-emerald-400">Rp 0</p>
+                <div class="bg-emerald-600/30 border border-emerald-500/50 px-2 py-1 rounded-lg text-right">
+                    <p class="text-[8px] text-emerald-300 uppercase font-black tracking-wider">Omzet</p>
+                    <p id="label_omzet_harian" class="text-xs font-black text-emerald-400">Rp 0</p>
                 </div>
 
-                <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
-                    🔔 Suara Notif
+                <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-[10px] sm:text-xs px-2.5 py-1.5 rounded-lg shadow cursor-pointer transition active:scale-95">
+                    🔔 Suara
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MAIN CONTENT GRID -->
-    <div class="container mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+    <!-- MAIN CONTENT LAYOUT (FLEX GROW SESUAI SISA LAYAR) -->
+    <div class="flex-1 min-h-0 container mx-auto p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch overflow-hidden">
         
-        <!-- SISI KIRI: INPUT PESANAN OFFLINE -->
-        <div class="lg:col-span-2 space-y-4">
-            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                <h2 class="text-base font-black text-gray-800">🍽️ Kartu Menu (Order Offline / Dine In)</h2>
-                <span id="stok_status" class="text-xs text-amber-600 font-bold">Sync Stok Dapur...</span>
+        <!-- SISI KIRI: INPUT PESANAN OFFLINE (MEMENUHI SISA TINGGI LAYAR) -->
+        <div class="lg:col-span-2 flex flex-col min-h-0 h-full space-y-2">
+            <div class="flex justify-between items-center bg-white p-2 rounded-xl border border-gray-200 shadow-xs shrink-0">
+                <h2 class="text-xs sm:text-sm font-black text-gray-800">🍽️ Kartu Menu (Offline / Dine In)</h2>
+                <span id="stok_status" class="text-[10px] text-amber-600 font-bold">Sync Stok...</span>
             </div>
 
-            <!-- KONTAINER KARTU MENU -->
-            <div id="kontainer_kartu_menu" class="space-y-4"></div>
+            <!-- KONTAINER KARTU MENU (AUTO FLEX SCROLLABLE) -->
+            <div id="kontainer_kartu_menu" class="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1"></div>
         </div>
 
-        <!-- SISI KANAN / FLOATING BOTTOM BAR PADA HP -->
-        <!-- Di HP: fixed bottom-0 left-0 right-0 (melayang di bawah layar), di desktop: lg:static -->
-        <div class="fixed bottom-0 left-0 right-0 lg:static z-40 p-3 lg:p-0 bg-slate-900/10 backdrop-blur-md lg:bg-transparent border-t border-gray-300 lg:border-none shadow-2xl lg:shadow-none max-h-[80vh] lg:max-h-none overflow-y-auto space-y-3">
+        <!-- SISI KANAN / PANEL KERANJANG & ONLINE ORDER -->
+        <div class="flex flex-col shrink-0 space-y-2 max-h-[45vh] lg:max-h-none lg:h-full lg:overflow-y-auto">
             
-            <div class="container mx-auto space-y-3">
-                <!-- 1. PESANAN ONLINE MASUK -->
-                <div class="bg-amber-50 rounded-2xl p-3 border-2 border-amber-300 shadow-md space-y-2">
-                    <div class="flex justify-between items-center border-b border-amber-200 pb-1.5">
-                        <h2 class="text-xs sm:text-sm font-black text-amber-900 flex items-center gap-2">
-                            <span>📲 Pesanan Online Masuk</span>
-                            <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
-                        </h2>
-                        <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
-                    </div>
+            <!-- 1. PESANAN ONLINE MASUK -->
+            <div class="bg-amber-50 rounded-xl p-2 border border-amber-300 shadow-xs space-y-1 shrink-0">
+                <div class="flex justify-between items-center border-b border-amber-200 pb-1">
+                    <h2 class="text-xs font-black text-amber-900 flex items-center gap-1.5">
+                        <span>📲 Pesanan Online</span>
+                        <span id="badge_total_online" class="bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+                    </h2>
+                    <span class="text-[9px] font-bold text-amber-700 animate-pulse">Sync 3s</span>
+                </div>
 
-                    <div id="list_pesanan_masuk" class="space-y-2 max-h-[100px] sm:max-h-[160px] overflow-y-auto">
-                        <p class="text-center text-gray-400 font-semibold text-xs py-1">Memuat pesanan online...</p>
+                <div id="list_pesanan_masuk" class="space-y-1 max-h-[80px] overflow-y-auto">
+                    <p class="text-center text-gray-400 font-semibold text-[10px] py-1">Memuat pesanan online...</p>
+                </div>
+            </div>
+
+            <!-- 2. KERANJANG TRANSAKSI OFFLINE -->
+            <div class="bg-white p-2.5 rounded-xl shadow-lg border-2 border-amber-400 space-y-1.5 flex-1 flex flex-col justify-between min-h-0">
+                <h2 class="text-xs font-black border-b pb-1 text-black flex items-center justify-between shrink-0">
+                    <span>🛒 Keranjang Kasir</span>
+                    <span class="text-[8px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">Offline / Dine-In</span>
+                </h2>
+                
+                <div class="bg-gray-50 p-1.5 rounded-lg border border-gray-200 space-y-1 shrink-0">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-700 mb-0.5">Pelanggan</label>
+                            <input type="text" id="kasir_nama" placeholder="Dine In / Nama" class="w-full border border-gray-300 p-1 rounded text-[10px] font-semibold bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-700 mb-0.5">No. WA (Opsional)</label>
+                            <input type="tel" id="kasir_hp" placeholder="08xxx" class="w-full border border-gray-300 p-1 rounded text-[10px] font-semibold bg-white">
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. KERANJANG TRANSAKSI OFFLINE -->
-                <div class="bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400 space-y-2">
-                    <h2 class="text-xs sm:text-sm font-black border-b pb-1.5 text-black flex items-center justify-between">
-                        <span>🛒 Keranjang Kasir</span>
-                        <span class="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Offline / Dine-In</span>
-                    </h2>
-                    
-                    <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 space-y-1.5">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[9px] font-bold text-gray-700 mb-0.5">Nama Pelanggan</label>
-                                <input type="text" id="kasir_nama" placeholder="Dine In / Nama" class="w-full border border-gray-300 p-1 rounded-md text-xs font-semibold bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-gray-700 mb-0.5">No. WA (Opsional)</label>
-                                <input type="tel" id="kasir_hp" placeholder="08xxx" class="w-full border border-gray-300 p-1 rounded-md text-xs font-semibold bg-white">
-                            </div>
-                        </div>
+                <div id="elemen_keranjang_kasir" class="flex-1 min-h-[50px] max-h-[100px] overflow-y-auto space-y-1 border-b pb-1 text-[11px]">
+                    <p class="text-gray-400 text-center text-[10px] py-1">Belum ada menu dipilih.</p>
+                </div>
+
+                <div class="space-y-1 pt-0.5 shrink-0">
+                    <div class="flex justify-between font-black text-xs">
+                        <span>Total Bayar:</span>
+                        <span id="total_belanja_kasir" class="text-amber-600">Rp 0</span>
                     </div>
 
-                    <div id="elemen_keranjang_kasir" class="space-y-1.5 max-h-[90px] sm:max-h-[140px] overflow-y-auto border-b pb-1.5 text-xs">
-                        <p class="text-gray-400 text-center text-xs py-1">Belum ada menu dipilih.</p>
-                    </div>
-
-                    <div class="space-y-1.5 pt-0.5">
-                        <div class="flex justify-between font-black text-xs sm:text-sm">
-                            <span>Total Bayar:</span>
-                            <span id="total_belanja_kasir" class="text-amber-600">Rp 0</span>
-                        </div>
-
-                        <button id="btn_proses_bayar" onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 rounded-xl text-xs shadow-md cursor-pointer transition active:scale-95 text-center">
-                            💵 PROSES BAYAR & SELESAI
-                        </button>
-                    </div>
+                    <button id="btn_proses_bayar" onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 rounded-lg text-xs shadow cursor-pointer transition active:scale-95 text-center">
+                        💵 PROSES BAYAR & SELESAI
+                    </button>
                 </div>
             </div>
 
@@ -254,7 +250,7 @@
         function tampilkanToast(pesan, warnaBg = "bg-slate-800") {
             let container = document.getElementById("toast_container");
             let toast = document.createElement("div");
-            toast.className = `${warnaBg} text-white font-bold text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-white/20 transition-all duration-300 transform translate-y-2`;
+            toast.className = `${warnaBg} text-white font-bold text-xs px-3 py-2 rounded-lg shadow-lg flex items-center gap-1.5 border border-white/20 transition-all duration-300 transform translate-y-2`;
             toast.innerHTML = `<span>💬</span> <span>${pesan}</span>`;
             
             container.appendChild(toast);
@@ -293,7 +289,7 @@
                             stokDapurPcs.tahu = tahuBaru;
 
                             document.getElementById("stok_status").innerText = 
-                                `Live Stok: Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+                                `Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
                             
                             renderKartuMenu(); 
                         }
@@ -301,7 +297,7 @@
                 })
                 .catch(e => {
                     console.error("Gagal sync stok:", e);
-                    document.getElementById("stok_status").innerText = "Gagal Sync Stok";
+                    document.getElementById("stok_status").innerText = "Gagal Sync";
                 });
 
             fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
@@ -313,7 +309,7 @@
                         
                         if (jumlahPesananSebelumnya !== -1 && data.length > jumlahPesananSebelumnya) {
                             bunyikanNotifikasiSuara("Ada pesanan online masuk!");
-                            tampilkanToast("📥 Pesanan Online Baru Masuk!", "bg-amber-500 text-black");
+                            tampilkanToast("📥 Pesanan Online Masuk!", "bg-amber-500 text-black");
                         }
                         
                         jumlahPesananSebelumnya = data.length;
@@ -332,16 +328,16 @@
                 let isOpen = kartuTerbuka[indexKartu] === true;
 
                 html += `
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-200">
-                        <button type="button" onclick="toggleKartu(${indexKartu})" class="w-full ${kartu.temaWarna} px-4 py-3 flex justify-between items-center cursor-pointer select-none text-left">
-                            <h3 class="font-black text-sm tracking-wide">📦 ${kartu.namaKartu}</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">${kartu.items.length} opsi</span>
-                                <span id="${idPanahKartu}" class="text-xs font-bold transition-transform duration-200">${isOpen ? '▲' : '▼'}</span>
+                    <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden shrink-0">
+                        <button type="button" onclick="toggleKartu(${indexKartu})" class="w-full ${kartu.temaWarna} px-3 py-2 flex justify-between items-center cursor-pointer select-none text-left">
+                            <h3 class="font-extrabold text-xs tracking-wide">📦 ${kartu.namaKartu}</h3>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] font-semibold bg-white/20 px-1.5 py-0.2 rounded-full">${kartu.items.length} opsi</span>
+                                <span id="${idPanahKartu}" class="text-[10px] font-bold">${isOpen ? '▲' : '▼'}</span>
                             </div>
                         </button>
 
-                        <div id="${idIsiKartu}" class="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 ${isOpen ? '' : 'hidden'} border-t border-gray-100">
+                        <div id="${idIsiKartu}" class="p-2 grid grid-cols-1 sm:grid-cols-2 gap-2 ${isOpen ? '' : 'hidden'} border-t border-gray-100">
                 `;
 
                 kartu.items.forEach((item, indexItem) => {
@@ -357,29 +353,29 @@
                     }
 
                     html += `
-                        <div class="border border-gray-100 bg-gray-50/50 rounded-xl p-2.5 flex flex-col justify-between ${!stokReady ? 'opacity-50' : ''}">
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-2 flex flex-col justify-between ${!stokReady ? 'opacity-50' : ''}">
                             <div>
                                 <div class="flex justify-between items-start">
-                                    <span class="font-extrabold text-xs text-gray-800">${item.nama}</span>
-                                    <span class="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 py-0.5 rounded">${item.desc}</span>
+                                    <span class="font-bold text-[11px] text-gray-800">${item.nama}</span>
+                                    <span class="text-[8px] font-bold bg-amber-100 text-amber-800 px-1 py-0.2 rounded">${item.desc}</span>
                                 </div>
-                                <div class="mt-1 mb-2 flex justify-between items-center">
-                                    <span class="font-black text-xs text-amber-600">Rp ${item.harga.toLocaleString('id-ID')}</span>
-                                    <span class="text-[9px] font-bold ${stokReady ? 'text-gray-500' : 'text-red-500'}">Maks: ${porsiMaksimal}</span>
+                                <div class="mt-0.5 mb-1.5 flex justify-between items-center">
+                                    <span class="font-black text-[11px] text-amber-600">Rp ${item.harga.toLocaleString('id-ID')}</span>
+                                    <span class="text-[8px] font-bold ${stokReady ? 'text-gray-500' : 'text-red-500'}">Maks: ${porsiMaksimal}</span>
                                 </div>
                             </div>
 
-                            <div class="space-y-1.5 mt-auto">
+                            <div class="space-y-1 mt-auto">
                                 ${stokReady ? `
-                                    <div class="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden h-7">
-                                        <button onclick="kurangQty('${idInput}')" class="px-2 h-full font-black text-xs cursor-pointer hover:bg-gray-100">-</button>
-                                        <input type="number" id="${idInput}" value="${currentQty}" readonly class="w-full text-center font-extrabold text-xs bg-white">
-                                        <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-2 h-full font-black text-xs cursor-pointer hover:bg-gray-100">+</button>
+                                    <div class="flex items-center bg-white border border-gray-300 rounded overflow-hidden h-6">
+                                        <button onclick="kurangQty('${idInput}')" class="px-1.5 h-full font-black text-xs hover:bg-gray-100">-</button>
+                                        <input type="number" id="${idInput}" value="${currentQty}" readonly class="w-full text-center font-extrabold text-[11px] bg-white">
+                                        <button onclick="tambahQty('${idInput}', ${porsiMaksimal})" class="px-1.5 h-full font-black text-xs hover:bg-gray-100">+</button>
                                     </div>
-                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}')" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[11px] py-1.5 rounded-lg transition active:scale-95 cursor-pointer shadow-xs">
+                                    <button onclick="tambahKeKeranjangKasir('${namaLengkap}', ${item.harga}, '${idInput}')" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] py-1 rounded transition active:scale-95 shadow-xs">
                                         + TAMBAH
                                     </button>
-                                ` : `<div class="text-[10px] bg-red-100 text-red-600 font-bold py-1 text-center rounded">HABIS</div>`}
+                                ` : `<div class="text-[9px] bg-red-100 text-red-600 font-bold py-0.5 text-center rounded">HABIS</div>`}
                             </div>
                         </div>
                     `;
@@ -431,21 +427,21 @@
             totalBelanjaKasir = 0;
 
             if (keranjangKasir.length === 0) {
-                html = `<p class="text-gray-400 text-center text-xs py-2">Belum ada menu dipilih.</p>`;
+                html = `<p class="text-gray-400 text-center text-[10px] py-1">Belum ada menu dipilih.</p>`;
             } else {
                 keranjangKasir.forEach((item, index) => {
                     let subtotal = item.qty * item.harga;
                     totalBelanjaKasir += subtotal;
 
                     html += `
-                        <div class="flex justify-between items-center text-xs border-b pb-1">
+                        <div class="flex justify-between items-center text-[11px] border-b pb-0.5">
                             <div>
-                                <span class="font-bold text-gray-800 block">${item.nama}</span>
-                                <span class="text-[10px] text-gray-500">${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}</span>
+                                <span class="font-bold text-gray-800 block leading-tight">${item.nama}</span>
+                                <span class="text-[9px] text-gray-500">${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}</span>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5">
                                 <span class="font-extrabold text-gray-800">Rp ${subtotal.toLocaleString('id-ID')}</span>
-                                <button onclick="keranjangKasir.splice(${index},1); renderKeranjangKasir();" class="text-red-500 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 rounded">✕</button>
+                                <button onclick="keranjangKasir.splice(${index},1); renderKeranjangKasir();" class="text-red-500 font-bold text-xs hover:bg-red-50 px-1 rounded">✕</button>
                             </div>
                         </div>
                     `;
@@ -473,7 +469,7 @@
             };
 
             bunyikanNotifikasiSuara("Transaksi kasir berhasil diselesaikan");
-            tampilkanToast("✅ Transaksi Kasir Disimpan!", "bg-emerald-600");
+            tampilkanToast("✅ Transaksi Disimpan!", "bg-emerald-600");
 
             keranjangKasir = [];
             renderKeranjangKasir();
@@ -491,39 +487,37 @@
                     syncSemuaData();
                 }
             })
-            .catch(err => {
-                console.error("Error background sync:", err);
-            });
+            .catch(err => console.error("Error background sync:", err));
         }
 
         function renderPesananOnline(listOrders) {
             let container = document.getElementById("list_pesanan_masuk");
             if (!listOrders || listOrders.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 font-semibold text-xs py-1">☕ Tidak ada pesanan online pending.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 font-semibold text-[10px] py-1">Tidak ada pesanan online pending.</p>`;
                 return;
             }
 
             let html = "";
             listOrders.forEach(order => {
                 html += `
-                    <div class="bg-white rounded-xl p-2 border border-amber-300 shadow-xs text-xs space-y-1">
+                    <div class="bg-white rounded-lg p-1.5 border border-amber-300 text-[10px] space-y-1">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="font-black text-gray-900 block">${order.namaPelanggan}</span>
-                                <span class="text-[10px] text-emerald-600 font-bold">WA: ${order.nomorWA}</span>
+                                <span class="font-black text-gray-900 block leading-tight">${order.namaPelanggan}</span>
+                                <span class="text-[8px] text-emerald-600 font-bold">WA: ${order.nomorWA}</span>
                             </div>
-                            <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">PENDING</span>
+                            <span class="text-[8px] bg-amber-100 text-amber-800 font-bold px-1 py-0.2 rounded">PENDING</span>
                         </div>
-                        <p class="font-semibold text-gray-700 bg-gray-50 p-1 rounded border border-gray-100 text-[10px]">${order.produk}</p>
+                        <p class="font-semibold text-gray-700 bg-gray-50 p-1 rounded border border-gray-100 text-[9px]">${order.produk}</p>
                         
-                        <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                        <div class="flex justify-between items-center pt-0.5 border-t border-gray-100">
                             <span class="font-black text-amber-600">Rp ${Number(order.totalHarga).toLocaleString('id-ID')}</span>
                             
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="prosesBatalkanOrder(${order.rowIndex})" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[9px] px-2 py-0.5 rounded-lg border border-red-200 cursor-pointer transition active:scale-95">
+                            <div class="flex items-center gap-1">
+                                <button onclick="prosesBatalkanOrder(${order.rowIndex})" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[8px] px-1.5 py-0.5 rounded border border-red-200">
                                     ❌ BATAL
                                 </button>
-                                <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] px-2 py-0.5 rounded-lg shadow cursor-pointer transition active:scale-95">
+                                <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[8px] px-1.5 py-0.5 rounded shadow">
                                     ✅ SELESAI
                                 </button>
                             </div>
