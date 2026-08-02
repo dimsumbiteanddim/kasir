@@ -47,6 +47,7 @@
             </div>
         </div>
     </div>
+
     <!-- MAIN CONTENT GRID -->
     <div class="container mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
         
@@ -179,12 +180,34 @@
                 ]
             },
             {
+                namaKartu: "Dimsum Goreng Paket",
+                kategoriBahan: "dimsum",
+                temaWarna: "bg-red-600 text-white",
+                items: [
+                    { nama: "Dimsum Goreng Original", harga: 20000, desc: "Isi 4 pcs", isiPcs: 4 },
+                    { nama: "Dimsum Goreng Mentai", harga: 20000, desc: "Isi 3 pcs", isiPcs: 3 },
+                    { nama: "Dimsum Goreng Keju", harga: 20000, desc: "Isi 3 pcs", isiPcs: 3 },
+                    { nama: "Dimsum Goreng Mozarella", harga: 22000, desc: "Isi 3 pcs", isiPcs: 3 }
+                ]
+            },
+            {
                 namaKartu: "Tahu Bakso Goreng",
                 kategoriBahan: "tahu",
                 temaWarna: "bg-amber-800 text-white",
                 items: [
-                    { nama: "Box Kecil", harga: 10000, desc: "Isi 10 pcs", isiPcs: 5 },
-                    { nama: "Box Besar", harga: 20000, desc: "Isi 20 pcs", isiPcs: 10 }
+                    { nama: "Box Kecil", harga: 10000, desc: "Isi 5 pcs", isiPcs: 5 },
+                    { nama: "Box Besar", harga: 20000, desc: "Isi 10 pcs", isiPcs: 10 }
+                ]
+            },
+            {
+                namaKartu: "Dimsum Goreng Satuan",
+                kategoriBahan: "dimsum",
+                temaWarna: "bg-rose-700 text-white",
+                items: [
+                    { nama: "Dimsum Goreng Original", harga: 5000, desc: "Isi 1 pc", isiPcs: 1 },
+                    { nama: "Dimsum Goreng Mentai", harga: 7000, desc: "Isi 1 pc", isiPcs: 1 },
+                    { nama: "Dimsum Goreng Keju", harga: 7000, desc: "Isi 1 pc", isiPcs: 1 },
+                    { nama: "Dimsum Goreng Mozarella", harga: 8000, desc: "Isi 1 pc", isiPcs: 1 }
                 ]
             }
         ];
@@ -252,7 +275,7 @@
                         let dimsumBaru = parseInt(resData.stokDimsumPcs) || 0;
                         let tahuBaru = parseInt(resData.stokTahuPcs) || 0;
 
-                        // --- TAMBAHAN KODE: UPDATE OMZET HARIAN KE HEADER ---
+                        // --- UPDATE OMZET HARIAN KE HEADER ---
                         let omzetHariIni = parseInt(resData.omzetHarian) || 0;
                         document.getElementById("label_omzet_harian").innerText = "Rp " + omzetHariIni.toLocaleString('id-ID');
 
