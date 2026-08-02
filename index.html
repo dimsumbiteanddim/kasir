@@ -22,7 +22,7 @@
     <div id="toast_container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- HEADER KASIR -->
-    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-30">
+    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-40">
         <div class="container mx-auto flex justify-between items-center gap-2">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🖥️</span>
@@ -62,10 +62,25 @@
             <div id="kontainer_kartu_menu" class="space-y-4"></div>
         </div>
 
-        <!-- SISI KANAN: KERANJANG KASIR MENGAMBANG & NOTIF ONLINE -->
-        <div class="space-y-5 lg:sticky lg:top-20 z-20">
+        <!-- SISI KANAN: PANEL FIX MENGAMBANG / STICKY DI SCREEN -->
+        <div class="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1 z-30">
             
-            <!-- 🛒 KERANJANG TRANSAKSI OFFLINE (MENGAMBANG/FLOATING) -->
+            <!-- 1. 📥 POSISI ATAS: PESANAN ONLINE MASUK -->
+            <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-300 shadow-md space-y-3">
+                <div class="flex justify-between items-center border-b border-amber-200 pb-2">
+                    <h2 class="text-sm font-black text-amber-900 flex items-center gap-2">
+                        <span>📲 Pesanan Online Masuk</span>
+                        <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
+                    </h2>
+                    <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
+                </div>
+
+                <div id="list_pesanan_masuk" class="space-y-3 max-h-[200px] overflow-y-auto">
+                    <p class="text-center text-gray-400 font-semibold text-xs py-3">Memuat pesanan online...</p>
+                </div>
+            </div>
+
+            <!-- 2. 🛒 POSISI BWAH: KERANJANG TRANSAKSI OFFLINE (STUCK & FLOATING) -->
             <div class="bg-white p-4 shadow-xl border-2 border-amber-400/80 rounded-2xl space-y-3 backdrop-blur-md">
                 <h2 class="text-base font-black border-b pb-2 text-black flex items-center justify-between">
                     <span>🛒 Keranjang Kasir</span>
@@ -85,7 +100,7 @@
                     </div>
                 </div>
 
-                <div id="elemen_keranjang_kasir" class="space-y-2 max-h-[180px] overflow-y-auto border-b pb-2 text-xs">
+                <div id="elemen_keranjang_kasir" class="space-y-2 max-h-[160px] overflow-y-auto border-b pb-2 text-xs">
                     <p class="text-gray-400 text-center text-xs py-2">Belum ada menu dipilih.</p>
                 </div>
 
@@ -98,21 +113,6 @@
                     <button id="btn_proses_bayar" onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-xs shadow-md cursor-pointer transition active:scale-95 text-center">
                         💵 PROSES BAYAR & SELESAI
                     </button>
-                </div>
-            </div>
-
-            <!-- 📥 TAB PESANAN ONLINE MASUK -->
-            <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-300 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-amber-200 pb-2">
-                    <h2 class="text-sm font-black text-amber-900 flex items-center gap-2">
-                        <span>📲 Pesanan Online Masuk</span>
-                        <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
-                    </h2>
-                    <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
-                </div>
-
-                <div id="list_pesanan_masuk" class="space-y-3 max-h-[250px] overflow-y-auto">
-                    <p class="text-center text-gray-400 font-semibold text-xs py-4">Memuat pesanan online...</p>
                 </div>
             </div>
 
@@ -263,29 +263,22 @@
             }, 3000);
         }
 
-        // ==========================================
-        // FUNGSI TOGGLE KARTU MENU (ACCORDION EFFECT)
-        // ==========================================
+        // ACCORDION TOGGLE
         function toggleKartu(indexKartu) {
             let statusSaatIni = kartuTerbuka[indexKartu] === true;
 
-            // Reset/Tutup semua kartu lain (Mengempiskan kartu lainnya)
             daftarKartuMenu.forEach((_, idx) => {
                 kartuTerbuka[idx] = false;
             });
 
-            // Jika kartu yang diklik tadi sedang tertutup, bukalah
             if (!statusSaatIni) {
                 kartuTerbuka[indexKartu] = true;
             }
 
-            // Re-render UI
             renderKartuMenu();
         }
 
-        // ==========================================
-        // FUNGSI LIVE SYNC DATA TERBARU
-        // ==========================================
+        // SYNC DATA BERKALA
         function syncSemuaData() {
             // 1. Sync Live Stok Dapur
             fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
@@ -295,11 +288,9 @@
                         let dimsumBaru = parseInt(resData.stokDimsumPcs) || 0;
                         let tahuBaru = parseInt(resData.stokTahuPcs) || 0;
 
-                        // --- UPDATE OMZET HARIAN KE HEADER ---
                         let omzetHariIni = parseInt(resData.omzetHarian) || 0;
                         document.getElementById("label_omzet_harian").innerText = "Rp " + omzetHariIni.toLocaleString('id-ID');
 
-                        // Hanya update dan re-render UI jika stok benar-benar berubah
                         if (stokDapurPcs.dimsum !== dimsumBaru || stokDapurPcs.tahu !== tahuBaru) {
                             stokDapurPcs.dimsum = dimsumBaru;
                             stokDapurPcs.tahu = tahuBaru;
@@ -324,7 +315,6 @@
                         cachedOnlineOrders = data;
                         renderPesananOnline(data);
                         
-                        // Deteksi jika ada pesanan baru yang masuk
                         if (jumlahPesananSebelumnya !== -1 && data.length > jumlahPesananSebelumnya) {
                             bunyikanNotifikasiSuara("Ada pesanan online masuk!");
                             tampilkanToast("📥 Pesanan Online Baru Masuk!", "bg-amber-500 text-black");
@@ -337,9 +327,7 @@
                 .catch(e => console.error("Gagal sync online:", e));
         }
 
-        // ==========================================
-        // FUNGSI RENDER MENU KASIR
-        // ==========================================
+        // RENDER KARTU MENU
         function renderKartuMenu() {
             let html = "";
             daftarKartuMenu.forEach((kartu, indexKartu) => {
@@ -472,9 +460,7 @@
             document.getElementById("total_belanja_kasir").innerText = "Rp " + totalBelanjaKasir.toLocaleString('id-ID');
         }
 
-        // ==========================================
-        // PROSES BAYAR TRANSAKSI KASIR (INSTANT RESPONSE / OPTIMISTIC)
-        // ==========================================
+        // PROSES BAYAR KASIR (OPTIMISTIC UPDATE)
         function prosesBayarKasir() {
             if (keranjangKasir.length === 0) {
                 alert("Keranjang kasir masih kosong!");
@@ -492,7 +478,6 @@
                 items: keranjangKasir.map(i => ({ produk: i.nama, qty: i.qty, subtotal: i.qty * i.harga }))
             };
 
-            // ⚡ OPTIMISTIC UPDATE: Langsung berikan notifikasi & kosongkan keranjang instan
             bunyikanNotifikasiSuara("Transaksi kasir berhasil diselesaikan");
             tampilkanToast("✅ Transaksi Kasir Disimpan!", "bg-emerald-600");
 
@@ -501,7 +486,6 @@
             document.getElementById("kasir_nama").value = "";
             document.getElementById("kasir_hp").value = "";
 
-            // Kirim request ke backend secara asynchronous di background
             fetch(urlWebApp, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain" },
@@ -510,7 +494,7 @@
             .then(res => res.json())
             .then(resData => {
                 if (resData.status === "success") {
-                    syncSemuaData(); // Sync omzet & stok terbaru
+                    syncSemuaData();
                 }
             })
             .catch(err => {
@@ -518,9 +502,7 @@
             });
         }
 
-        // ==========================================
-        // RENDER & MANAJEMEN PESANAN ONLINE
-        // ==========================================
+        // RENDER PESANAN ONLINE
         function renderPesananOnline(listOrders) {
             let container = document.getElementById("list_pesanan_masuk");
             if (!listOrders || listOrders.length === 0) {
@@ -559,9 +541,8 @@
             container.innerHTML = html;
         }
 
-        // ⚡ PROSES SELESAIKAN ONLINE (INSTANT / OPTIMISTIC)
+        // PROSES SELESAIKAN ONLINE
         function prosesSelesaikanOrder(rowIndex) {
-            // Hapus dari UI secara INSTAN tanpa menunggu server
             cachedOnlineOrders = cachedOnlineOrders.filter(o => o.rowIndex !== rowIndex);
             renderPesananOnline(cachedOnlineOrders);
 
@@ -571,7 +552,6 @@
             bunyikanNotifikasiSuara("Pesanan berhasil diselesaikan");
             tampilkanToast("✅ Pesanan online diselesaikan!", "bg-emerald-600");
 
-            // Kirim data ke backend via background
             let payload = { action: "completeOrder", rowIndex: rowIndex };
             fetch(urlWebApp, {
                 method: "POST",
@@ -582,13 +562,12 @@
             .catch(err => console.error("Error background sync:", err));
         }
 
-        // ⚡ PROSES BATALKAN ONLINE (INSTANT / OPTIMISTIC)
+        // PROSES BATALKAN ONLINE
         function prosesBatalkanOrder(rowIndex) {
             if (!confirm("Apakah Anda yakin ingin membatalkan pesanan online ini?")) {
                 return;
             }
 
-            // Hapus dari UI secara INSTAN
             cachedOnlineOrders = cachedOnlineOrders.filter(o => o.rowIndex !== rowIndex);
             renderPesananOnline(cachedOnlineOrders);
 
@@ -597,7 +576,6 @@
 
             tampilkanToast("❌ Pesanan online dibatalkan!", "bg-red-600");
 
-            // Kirim data ke backend via background
             let payload = { action: "cancelOrder", rowIndex: rowIndex };
             fetch(urlWebApp, {
                 method: "POST",
