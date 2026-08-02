@@ -16,13 +16,14 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-900 pb-10">
+<!-- Tambah padding bottom ekstra (pb-80 lg:pb-10) supaya menu paling bawah tidak tertutup oleh Floating Panel di HP -->
+<body class="bg-gray-100 min-h-screen text-gray-900 pb-80 lg:pb-10">
 
     <!-- NOTIFIKASI TOAST POP-UP -->
-    <div id="toast_container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast_container" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- HEADER KASIR -->
-    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-40">
+    <div class="bg-slate-900 text-white p-3 sm:p-4 shadow-lg sticky top-0 z-30">
         <div class="container mx-auto flex justify-between items-center gap-2">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🖥️</span>
@@ -42,7 +43,7 @@
                 </div>
 
                 <button id="btn_aktifkan_suara" onclick="aktifkanSuaraManual()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-3 py-2 rounded-lg shadow cursor-pointer transition active:scale-95">
-                    🔔 Aktifkan Suara Notif
+                    🔔 Suara Notif
                 </button>
             </div>
         </div>
@@ -62,57 +63,60 @@
             <div id="kontainer_kartu_menu" class="space-y-4"></div>
         </div>
 
-        <!-- SISI KANAN: PANEL FIX MENGAMBANG / STICKY DI SCREEN -->
-        <div class="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1 z-30">
+        <!-- SISI KANAN / FLOATING BOTTOM BAR PADA HP -->
+        <!-- Di HP: fixed bottom-0 left-0 right-0 (melayang di bawah layar), di desktop: lg:static -->
+        <div class="fixed bottom-0 left-0 right-0 lg:static z-40 p-3 lg:p-0 bg-slate-900/10 backdrop-blur-md lg:bg-transparent border-t border-gray-300 lg:border-none shadow-2xl lg:shadow-none max-h-[80vh] lg:max-h-none overflow-y-auto space-y-3">
             
-            <!-- 1. 📥 POSISI ATAS: PESANAN ONLINE MASUK -->
-            <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-300 shadow-md space-y-3">
-                <div class="flex justify-between items-center border-b border-amber-200 pb-2">
-                    <h2 class="text-sm font-black text-amber-900 flex items-center gap-2">
-                        <span>📲 Pesanan Online Masuk</span>
-                        <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
+            <div class="container mx-auto space-y-3">
+                <!-- 1. PESANAN ONLINE MASUK -->
+                <div class="bg-amber-50 rounded-2xl p-3 border-2 border-amber-300 shadow-md space-y-2">
+                    <div class="flex justify-between items-center border-b border-amber-200 pb-1.5">
+                        <h2 class="text-xs sm:text-sm font-black text-amber-900 flex items-center gap-2">
+                            <span>📲 Pesanan Online Masuk</span>
+                            <span id="badge_total_online" class="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded-full">0</span>
+                        </h2>
+                        <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
+                    </div>
+
+                    <div id="list_pesanan_masuk" class="space-y-2 max-h-[100px] sm:max-h-[160px] overflow-y-auto">
+                        <p class="text-center text-gray-400 font-semibold text-xs py-1">Memuat pesanan online...</p>
+                    </div>
+                </div>
+
+                <!-- 2. KERANJANG TRANSAKSI OFFLINE -->
+                <div class="bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400 space-y-2">
+                    <h2 class="text-xs sm:text-sm font-black border-b pb-1.5 text-black flex items-center justify-between">
+                        <span>🛒 Keranjang Kasir</span>
+                        <span class="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Offline / Dine-In</span>
                     </h2>
-                    <span class="text-[10px] font-bold text-amber-700 animate-pulse">Auto Sync 3s</span>
-                </div>
-
-                <div id="list_pesanan_masuk" class="space-y-3 max-h-[200px] overflow-y-auto">
-                    <p class="text-center text-gray-400 font-semibold text-xs py-3">Memuat pesanan online...</p>
-                </div>
-            </div>
-
-            <!-- 2. 🛒 POSISI BWAH: KERANJANG TRANSAKSI OFFLINE (STUCK & FLOATING) -->
-            <div class="bg-white p-4 shadow-xl border-2 border-amber-400/80 rounded-2xl space-y-3 backdrop-blur-md">
-                <h2 class="text-base font-black border-b pb-2 text-black flex items-center justify-between">
-                    <span>🛒 Keranjang Kasir</span>
-                    <span class="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Offline / Dine-In</span>
-                </h2>
-                
-                <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-200 space-y-2">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-700 mb-0.5">Nama Pelanggan</label>
-                            <input type="text" id="kasir_nama" placeholder="Dine In / Nama" class="w-full border border-gray-300 p-2 rounded-lg text-xs font-semibold bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-700 mb-0.5">No. WA (Opsional)</label>
-                            <input type="tel" id="kasir_hp" placeholder="08xxx" class="w-full border border-gray-300 p-2 rounded-lg text-xs font-semibold bg-white">
+                    
+                    <div class="bg-gray-50 p-2 rounded-xl border border-gray-200 space-y-1.5">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-gray-700 mb-0.5">Nama Pelanggan</label>
+                                <input type="text" id="kasir_nama" placeholder="Dine In / Nama" class="w-full border border-gray-300 p-1 rounded-md text-xs font-semibold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-gray-700 mb-0.5">No. WA (Opsional)</label>
+                                <input type="tel" id="kasir_hp" placeholder="08xxx" class="w-full border border-gray-300 p-1 rounded-md text-xs font-semibold bg-white">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="elemen_keranjang_kasir" class="space-y-2 max-h-[160px] overflow-y-auto border-b pb-2 text-xs">
-                    <p class="text-gray-400 text-center text-xs py-2">Belum ada menu dipilih.</p>
-                </div>
-
-                <div class="space-y-3 pt-1">
-                    <div class="flex justify-between font-black text-base">
-                        <span>Total Bayar:</span>
-                        <span id="total_belanja_kasir" class="text-amber-600">Rp 0</span>
+                    <div id="elemen_keranjang_kasir" class="space-y-1.5 max-h-[90px] sm:max-h-[140px] overflow-y-auto border-b pb-1.5 text-xs">
+                        <p class="text-gray-400 text-center text-xs py-1">Belum ada menu dipilih.</p>
                     </div>
 
-                    <button id="btn_proses_bayar" onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-xs shadow-md cursor-pointer transition active:scale-95 text-center">
-                        💵 PROSES BAYAR & SELESAI
-                    </button>
+                    <div class="space-y-1.5 pt-0.5">
+                        <div class="flex justify-between font-black text-xs sm:text-sm">
+                            <span>Total Bayar:</span>
+                            <span id="total_belanja_kasir" class="text-amber-600">Rp 0</span>
+                        </div>
+
+                        <button id="btn_proses_bayar" onclick="prosesBayarKasir()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 rounded-xl text-xs shadow-md cursor-pointer transition active:scale-95 text-center">
+                            💵 PROSES BAYAR & SELESAI
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -121,7 +125,6 @@
 
     <!-- SCRIPT LOGIKA POS -->
     <script>
-        // Web App URL Deployment Code.gs
         const urlWebApp = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec";
 
         let keranjangKasir = [];
@@ -132,7 +135,6 @@
         let isAudioAllowed = false;
         let cachedOnlineOrders = [];
 
-        // Deklarasi Variabel Stok Dapur
         let stokDapurPcs = { dimsum: 0, tahu: 0 };
 
         let daftarKartuMenu = [
@@ -215,7 +217,7 @@
         window.onload = function() {
             renderKartuMenu();
             syncSemuaData();
-            setInterval(syncSemuaData, 3000); // Sync berkala tiap 3 detik
+            setInterval(syncSemuaData, 3000);
 
             document.addEventListener('click', pemicuSuaraOtomatis, { once: true });
             document.addEventListener('touchstart', pemicuSuaraOtomatis, { once: true });
@@ -263,10 +265,8 @@
             }, 3000);
         }
 
-        // ACCORDION TOGGLE
         function toggleKartu(indexKartu) {
             let statusSaatIni = kartuTerbuka[indexKartu] === true;
-
             daftarKartuMenu.forEach((_, idx) => {
                 kartuTerbuka[idx] = false;
             });
@@ -274,13 +274,10 @@
             if (!statusSaatIni) {
                 kartuTerbuka[indexKartu] = true;
             }
-
             renderKartuMenu();
         }
 
-        // SYNC DATA BERKALA
         function syncSemuaData() {
-            // 1. Sync Live Stok Dapur
             fetch(`${urlWebApp}?action=getStok`, { redirect: 'follow' })
                 .then(res => res.json())
                 .then(resData => {
@@ -307,7 +304,6 @@
                     document.getElementById("stok_status").innerText = "Gagal Sync Stok";
                 });
 
-            // 2. Sync Pesanan Online Pending
             fetch(`${urlWebApp}?action=getPendingOrders`, { redirect: 'follow' })
                 .then(res => res.json())
                 .then(data => {
@@ -327,7 +323,6 @@
                 .catch(e => console.error("Gagal sync online:", e));
         }
 
-        // RENDER KARTU MENU
         function renderKartuMenu() {
             let html = "";
             daftarKartuMenu.forEach((kartu, indexKartu) => {
@@ -460,7 +455,6 @@
             document.getElementById("total_belanja_kasir").innerText = "Rp " + totalBelanjaKasir.toLocaleString('id-ID');
         }
 
-        // PROSES BAYAR KASIR (OPTIMISTIC UPDATE)
         function prosesBayarKasir() {
             if (keranjangKasir.length === 0) {
                 alert("Keranjang kasir masih kosong!");
@@ -502,35 +496,34 @@
             });
         }
 
-        // RENDER PESANAN ONLINE
         function renderPesananOnline(listOrders) {
             let container = document.getElementById("list_pesanan_masuk");
             if (!listOrders || listOrders.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 font-semibold text-xs py-3">☕ Tidak ada pesanan online pending.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 font-semibold text-xs py-1">☕ Tidak ada pesanan online pending.</p>`;
                 return;
             }
 
             let html = "";
             listOrders.forEach(order => {
                 html += `
-                    <div class="bg-white rounded-xl p-3 border border-amber-300 shadow-xs text-xs space-y-2">
+                    <div class="bg-white rounded-xl p-2 border border-amber-300 shadow-xs text-xs space-y-1">
                         <div class="flex justify-between items-start">
                             <div>
                                 <span class="font-black text-gray-900 block">${order.namaPelanggan}</span>
                                 <span class="text-[10px] text-emerald-600 font-bold">WA: ${order.nomorWA}</span>
                             </div>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">PENDING</span>
+                            <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">PENDING</span>
                         </div>
-                        <p class="font-semibold text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 text-[11px]">${order.produk}</p>
+                        <p class="font-semibold text-gray-700 bg-gray-50 p-1 rounded border border-gray-100 text-[10px]">${order.produk}</p>
                         
                         <div class="flex justify-between items-center pt-1 border-t border-gray-100">
                             <span class="font-black text-amber-600">Rp ${Number(order.totalHarga).toLocaleString('id-ID')}</span>
                             
                             <div class="flex items-center gap-1.5">
-                                <button onclick="prosesBatalkanOrder(${order.rowIndex})" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg border border-red-200 cursor-pointer transition active:scale-95">
+                                <button onclick="prosesBatalkanOrder(${order.rowIndex})" class="bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-[9px] px-2 py-0.5 rounded-lg border border-red-200 cursor-pointer transition active:scale-95">
                                     ❌ BATAL
                                 </button>
-                                <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow cursor-pointer transition active:scale-95">
+                                <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] px-2 py-0.5 rounded-lg shadow cursor-pointer transition active:scale-95">
                                     ✅ SELESAI
                                 </button>
                             </div>
@@ -541,7 +534,6 @@
             container.innerHTML = html;
         }
 
-        // PROSES SELESAIKAN ONLINE
         function prosesSelesaikanOrder(rowIndex) {
             cachedOnlineOrders = cachedOnlineOrders.filter(o => o.rowIndex !== rowIndex);
             renderPesananOnline(cachedOnlineOrders);
@@ -562,7 +554,6 @@
             .catch(err => console.error("Error background sync:", err));
         }
 
-        // PROSES BATALKAN ONLINE
         function prosesBatalkanOrder(rowIndex) {
             if (!confirm("Apakah Anda yakin ingin membatalkan pesanan online ini?")) {
                 return;
