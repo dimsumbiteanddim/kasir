@@ -15,11 +15,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            overscroll-behavior-y: contain; /* Mengaktifkan gesture pull-to-refresh browser */
+            overscroll-behavior-y: contain; /* Gestur pull-to-refresh browser */
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen w-screen flex flex-col text-gray-900 overflow-y-auto">
+<body class="bg-gray-100 min-h-screen w-screen flex flex-col text-gray-900 overflow-y-auto pb-64 lg:pb-4">
 
     <!-- NOTIFIKASI TOAST POP-UP -->
     <div id="toast_container" class="fixed top-16 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -56,7 +56,7 @@
     </div>
 
     <!-- MAIN CONTENT LAYOUT -->
-    <div class="flex-1 container mx-auto p-2 sm:p-2 grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
+    <div class="flex-1 container mx-auto p-2 sm:p-2 grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
         
         <!-- SISI KIRI: INPUT PESANAN OFFLINE -->
         <div class="lg:col-span-2 flex flex-col space-y-2">
@@ -69,11 +69,11 @@
             <div id="kontainer_kartu_menu" class="space-y-1.5"></div>
         </div>
 
-        <!-- SISI KANAN / PANEL KERANJANG & ONLINE ORDER -->
-        <div class="flex flex-col shrink-0 space-y-2 lg:h-full">
+        <!-- SISI KANAN / FLOATING PANEL (Keranjang Kasir & Online Order) -->
+        <div class="fixed bottom-0 left-0 right-0 p-2 bg-slate-900/10 backdrop-blur-md border-t border-gray-300 z-40 lg:static lg:bg-transparent lg:p-0 lg:border-none lg:z-auto flex flex-col space-y-2 max-h-[50vh] lg:max-h-none overflow-y-auto">
             
             <!-- 1. PESANAN ONLINE MASUK -->
-            <div class="bg-amber-50 rounded-xl p-2 border border-amber-300 shadow-xs space-y-1 shrink-0">
+            <div class="bg-amber-50 rounded-xl p-2 border border-amber-300 shadow-lg space-y-1 shrink-0">
                 <div class="flex justify-between items-center border-b border-amber-200 pb-1">
                     <h2 class="text-xs font-black text-amber-900 flex items-center gap-1.5">
                         <span>📲 Pesanan Online</span>
@@ -82,13 +82,13 @@
                     <span class="text-[9px] font-bold text-amber-700 animate-pulse">Sync 3s</span>
                 </div>
 
-                <div id="list_pesanan_masuk" class="space-y-1 max-h-[120px] overflow-y-auto">
+                <div id="list_pesanan_masuk" class="space-y-1 max-h-[80px] overflow-y-auto">
                     <p class="text-center text-gray-400 font-semibold text-[10px] py-1">Memuat pesanan online...</p>
                 </div>
             </div>
 
-            <!-- 2. KERANJANG TRANSAKSI OFFLINE -->
-            <div class="bg-white p-2.5 rounded-xl shadow-lg border-2 border-amber-400 space-y-1.5 flex-1 flex flex-col justify-between">
+            <!-- 2. KERANJANG FLOATING TRANSAKSI OFFLINE -->
+            <div class="bg-white p-2.5 rounded-xl shadow-2xl border-2 border-amber-400 space-y-1.5 flex flex-col justify-between">
                 <h2 class="text-xs font-black border-b pb-1 text-black flex items-center justify-between shrink-0">
                     <span>🛒 Keranjang Kasir</span>
                     <span class="text-[8px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">Offline / Dine-In</span>
@@ -107,7 +107,7 @@
                     </div>
                 </div>
 
-                <div id="elemen_keranjang_kasir" class="flex-1 min-h-[60px] max-h-[150px] overflow-y-auto space-y-1 border-b pb-1 text-[11px]">
+                <div id="elemen_keranjang_kasir" class="max-h-[80px] lg:max-h-[150px] overflow-y-auto space-y-1 border-b pb-1 text-[11px]">
                     <p class="text-gray-400 text-center text-[10px] py-1">Belum ada menu dipilih.</p>
                 </div>
 
@@ -226,7 +226,7 @@
             document.addEventListener('touchstart', pemicuSuaraOtomatis, { once: true });
         };
 
-        // GESTURE DETEKSI PULL TO REFRESH
+        // DETEKSI PULL TO REFRESH
         let startY = 0;
         let isPulling = false;
 
