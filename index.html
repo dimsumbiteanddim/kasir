@@ -138,7 +138,8 @@
         let isAudioAllowed = false;
         let cachedOnlineOrders = [];
 
-        let stokDapurPcs = { dimsum: 0, tahu: 0 };
+        // 1. TAMBAH STOK DIMSUM GORENG
+        let stokDapurPcs = { dimsum: 0, tahu: 0, dimsumGoreng: 0 };
 
         let daftarKartuMenu = [
             {
@@ -186,7 +187,7 @@
             },
             {
                 namaKartu: "Dimsum Goreng Paket",
-                kategoriBahan: "dimsum",
+                kategoriBahan: "dimsumGoreng", // <-- DISESUAIKAN
                 temaWarna: "bg-red-600 text-white",
                 items: [
                     { nama: "Dimsum Goreng Original", harga: 20000, desc: "Isi 4 pcs", isiPcs: 4 },
@@ -206,7 +207,7 @@
             },
             {
                 namaKartu: "Dimsum Goreng Satuan",
-                kategoriBahan: "dimsum",
+                kategoriBahan: "dimsumGoreng", // <-- DISESUAIKAN
                 temaWarna: "bg-rose-700 text-white",
                 items: [
                     { nama: "Dimsum Goreng Original", harga: 5000, desc: "Isi 1 pc", isiPcs: 1 },
@@ -333,16 +334,20 @@
                     if (resData && resData.status === "success") {
                         let dimsumBaru = parseInt(resData.stokDimsumPcs) || 0;
                         let tahuBaru = parseInt(resData.stokTahuPcs) || 0;
+                        // 2. BACA STOK DIMSUM GORENG DARI APPSCRIPT
+                        let gorengBaru = parseInt(resData.stokDimsumGorengPcs) || 0;
 
                         let omzetHariIni = parseInt(resData.omzetHarian) || 0;
                         document.getElementById("label_omzet_harian").innerText = "Rp " + omzetHariIni.toLocaleString('id-ID');
 
-                        if (stokDapurPcs.dimsum !== dimsumBaru || stokDapurPcs.tahu !== tahuBaru) {
+                        // 3. PERBAIKAN PENGECEKAN & INDIKATOR HEADER STOK
+                        if (stokDapurPcs.dimsum !== dimsumBaru || stokDapurPcs.tahu !== tahuBaru || stokDapurPcs.dimsumGoreng !== gorengBaru) {
                             stokDapurPcs.dimsum = dimsumBaru;
                             stokDapurPcs.tahu = tahuBaru;
+                            stokDapurPcs.dimsumGoreng = gorengBaru;
 
                             document.getElementById("stok_status").innerText = 
-                                `Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu})`;
+                                `Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu}) | Goreng (${stokDapurPcs.dimsumGoreng})`;
                             
                             renderKartuMenu(); 
                         }
