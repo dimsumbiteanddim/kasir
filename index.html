@@ -633,7 +633,9 @@
             .catch(err => console.error("Error background sync:", err));
         }
         
-        // PENDAFTARAN SERVICE WORKER DENGAN DETEKSI UPDATE OTOMATIS
+       
+ // 4.PENDAFTARAN SERVICE WORKER DENGAN DETEKSI UPDATE OTOMATIS
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -646,9 +648,13 @@ if ('serviceWorker' in navigator) {
           
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Jika versi v2 selesai diinstall, muat ulang halaman agar tampilan & ikon baru langsung aktif
               console.log('Versi baru ditemukan! Memuat ulang halaman...');
-              tampilkanToast("🔄 Memperbarui aplikasi ke versi terbaru...", "bg-blue-600");
+              
+              // Cek dulu apakah fungsi tampilkanToast ada sebelum dipanggil
+              if (typeof tampilkanToast === 'function') {
+                tampilkanToast("🔄 Memperbarui aplikasi ke versi terbaru...", "bg-blue-600");
+              }
+
               setTimeout(() => {
                 window.location.reload();
               }, 1500);
