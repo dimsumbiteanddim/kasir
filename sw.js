@@ -7,8 +7,6 @@ const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './favicon.png',
-  './icon-192.png', // Sesuaikan nama file ikonmu
-  './icon-512.png'
 ];
 
 // 1. EVENT INSTALL: Simpan file ke cache dan paksa Service Worker baru langsung aktif
