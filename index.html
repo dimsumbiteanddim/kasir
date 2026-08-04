@@ -632,6 +632,35 @@
             .then(() => syncSemuaData())
             .catch(err => console.error("Error background sync:", err));
         }
+        
+        // PENDAFTARAN SERVICE WORKER DENGAN DETEKSI UPDATE OTOMATIS
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((registration) => {
+        console.log('ServiceWorker berhasil terdaftar:', registration.scope);
+
+        // Cek apakah ada update Service Worker baru di background
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Jika versi v2 selesai diinstall, muat ulang halaman agar tampilan & ikon baru langsung aktif
+              console.log('Versi baru ditemukan! Memuat ulang halaman...');
+              tampilkanToast("🔄 Memperbarui aplikasi ke versi terbaru...", "bg-blue-600");
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
+            }
+          });
+        });
+      })
+      .catch((error) => {
+        console.error('Pendaftaran ServiceWorker gagal:', error);
+      });
+  });
+}
     </script>
 </body>
 </html>
