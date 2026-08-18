@@ -383,7 +383,7 @@
 
                             let elStok = document.getElementById("stok_status");
                             if (elStok) {
-                                elStok.innerText = `Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu}) \vert{} Goreng (${stokDapurPcs.dimsumGoreng})`;
+                                elStok.innerText = `Dimsum (${stokDapurPcs.dimsum}) | Tahu (${stokDapurPcs.tahu}) | Goreng (${stokDapurPcs.dimsumGoreng})`;
                             }
                             
                             renderKartuMenu(); 
@@ -444,7 +444,7 @@
                 kartu.items.forEach((item, indexItem) => {
                     let idInput = `qty_${indexKartu}_${indexItem}`;
                     let currentQty = inputQtyState[idInput] || 1;
-                    let namaLengkap = `${kartu.namaKartu} -${item.nama}`;
+                    let namaLengkap = `${kartu.namaKartu} - ${item.nama}`;
                     let porsiMaksimal = Math.floor(sisaPcsBahan / item.isiPcs);
                     let stokReady = porsiMaksimal > 0;
 
@@ -550,7 +550,7 @@
                         <div class="flex justify-between items-center text-[11px] border-b pb-0.5">
                             <div>
                                 <span class="font-bold text-gray-800 block leading-tight">${item.nama}</span>
-                                <span class="text-[9px] text-gray-500">${item.qty} x Rp${item.harga.toLocaleString('id-ID')}</span>
+                                <span class="text-[9px] text-gray-500">${item.qty} x Rp ${item.harga.toLocaleString('id-ID')}</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <span class="font-extrabold text-gray-800">Rp ${subtotal.toLocaleString('id-ID')}</span>
@@ -666,4 +666,99 @@
                                     ❌ BATAL
                                 </button>
                                 <button onclick="prosesSelesaikanOrder(${order.rowIndex})" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[8px] px-1.5 py-0.5 rounded shadow">
-                                    ✅ SELE
+                                    ✅ SELESAI
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        /**
+         * FUNGSI PROSES EKSEKUSI PESANAN ONLINE (SELESAI)
+         */
+        function prosesSelesaikanOrder(rowIndex) {
+            cachedOnlineOrders = cachedOnlineOrders.filter(o => o.rowIndex !== rowIndex);
+            renderPesananOnline(cachedOnlineOrders);
+
+            if (jumlahPesananSebelumnya > 0) jumlahPesananSebelumnya--;
+            let badge = document.getElementById("badge_total_online");
+            if (badge) badge.innerText = cachedOnlineOrders.length;
+
+            bunyikanNotifikasiSuara("Pesanan berhasil diselesaikan");
+            tampilkanToast("✅ Pesanan online diselesaikan!", "bg-emerald-600");
+
+            let payload = { action: "completeOrder", rowIndex: rowIndex };
+            fetch(urlWebApp, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => syncSemuaData())
+            .catch(err => console.error("Error background sync:", err));
+        }
+
+        /**
+         * FUNGSI PROSES BATALKAN PESANAN ONLINE
+         */
+        function prosesBatalkanOrder(rowIndex) {
+            if (!confirm("Apakah Anda yakin ingin membatalkan pesanan online ini?")) {
+                return;
+            }
+
+            cachedOnlineOrders = cachedOnlineOrders.filter(o => o.rowIndex !== rowIndex);
+            renderPesananOnline(cachedOnlineOrders);
+
+            if (jumlahPesananSebelumnya > 0) jumlahPesananSebelumnya--;
+            let badge = document.getElementById("badge_total_online");
+            if (badge) badge.innerText = cachedOnlineOrders.length;
+
+            tampilkanToast("❌ Pesanan online dibatalkan!", "bg-red-600");
+
+            let payload = { action: "cancelOrder", rowIndex: rowIndex };
+            fetch(urlWebApp, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => syncSemuaData())
+            .catch(err => console.error("Error background sync:", err));
+        }        
+           
+        /**
+         * PENDAFTARAN SERVICE WORKER (PWA) DENGAN AUTO-UPDATE
+         */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then((registration) => {
+                    console.log('ServiceWorker berhasil terdaftar:', registration.scope);
+
+                    registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('Versi baru ditemukan! Memuat ulang halaman...');
+                        
+                        if (typeof tampilkanToast === 'function') {
+                            tampilkanToast("🔄 Memperbarui aplikasi ke versi terbaru...", "bg-blue-600");
+                        }
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                        }
+                    });
+                    });
+                })
+                .catch((error) => {
+                    console.error('Pendaftaran ServiceWorker gagal:', error);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
