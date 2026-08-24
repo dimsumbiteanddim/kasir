@@ -44,11 +44,50 @@
     .btn-header { background: #3498db; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; }
     .btn-header:hover { opacity: 0.9; }
 
-    /* LAYOUT MAIN */
-    .main-container { display: flex; gap: 16px; padding: 16px; max-width: 1400px; margin: 0 auto; }
-    .left-panel { flex: 2; }
-    .right-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 380px; }
+    /* LAYOUT MAIN - Tetap Menyamping dan Fleksibel */
+    .main-container { 
+      display: flex; 
+      gap: 12px; 
+      padding: 12px; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .left-panel { 
+      flex: 1.3; 
+      min-width: 0; /* Mencegah elemen keluar dari kontainer flex */
+    }
+    
+    .right-panel { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+      min-width: 0; /* Hapus min-width 380px yang kaku */
+    }
 
+    /* Penyesuaian ukuran teks tombol kategori agar pas di layar kecil */
+    .category-header { 
+      padding: 10px 12px; 
+      color: white; 
+      font-weight: bold; 
+      font-size: 13px; 
+      cursor: pointer; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      gap: 4px;
+    }
+
+    .category-body { 
+      background: white; 
+      padding: 10px; 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+      gap: 10px; 
+    }
     /* STOK SUMMARY */
     .stok-bar { background: white; padding: 10px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
     .stok-bar h3 { font-size: 14px; color: #444; }
