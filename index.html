@@ -87,12 +87,18 @@
     .cart-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; }
     .cart-row-left { display: flex; align-items: center; gap: 4px; overflow: hidden; }
     .cart-row-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+    .btn-del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 10px; }
     
     .summary-line { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; color: #64748b; }
     .summary-line.total { font-size: 12px; font-weight: bold; color: var(--orange-dark); border-top: 1px solid #e2e8f0; padding-top: 4px; margin-top: 4px; }
     .discount-input { width: 60px; text-align: right; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; font-size: 10px; }
 
     .btn-proses { width: 100%; background: #059669; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 6px; display: flex; justify-content: center; align-items: center; gap: 4px; }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -176,24 +182,60 @@
     </div>
   </div>
 
-  <script>
+  <!-- 📢 MODAL NOTIFIKASI TRANSAKSI BERHASIL (GREEN THEME PROFESSIONAL) -->
+  <div id="modalKasirSukses" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 30, 40, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #ffffff; width: 100%; max-width: 360px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #a7f3d0; animation: modalPop 0.3s ease-out;">
+      
+      <!-- HEADER HIJAU GRADASI -->
+      <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 20px; text-align: center; color: #ffffff;">
+        <div style="width: 54px; height: 54px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.4);">
+          <i class="fa-solid fa-check" style="color: #ffffff;"></i>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 800; margin: 0; letter-spacing: 0.5px;">Transaksi Berhasil!</h3>
+        <p style="font-size: 11px; opacity: 0.9; margin-top: 4px; font-weight: 500;">Data penjualan telah tersimpan ke sistem.</p>
+      </div>
 
+      <!-- BODY & RINGKASAN STRUK -->
+      <div style="padding: 16px;">
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px; font-size: 11px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px dashed #a7f3d0;">
+            <span style="color: #4b5563; font-weight: 600;">Pelanggan:</span>
+            <span id="posModalNama" style="font-weight: 700; color: #111827;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding-top: 6px; padding-bottom: 6px; border-bottom: 1px dashed #a7f3d0;">
+            <span style="color: #4b5563; font-weight: 600;">No. WhatsApp:</span>
+            <span id="posModalWA" style="font-weight: 700; color: #059669;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding-top: 6px;">
+            <span style="color: #111827; font-weight: 800;">Total Bayar:</span>
+            <span id="posModalTotal" style="font-weight: 900; color: #059669; font-size: 13px;">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- TOMBOL AKSI HIJAU -->
+        <button onclick="tutupModalKasir()" style="width: 100%; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform 0.1s ease; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
+          <i class="fa-solid fa-check-circle"></i> TRANSAKSI BARU / SIAP
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
     // Registrasi & Cek Pembaruan Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    reg.onupdatefound = () => {
-      const installingWorker = reg.installing;
-      installingWorker.onstatechange = () => {
-        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // Ada versi kode baru, muat ulang halaman otomatis
-          window.location.reload();
-        }
-      };
-    };
-  });
-}
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          };
+        };
+      });
+    }
     
-    // URL GOOGLE APPS SCRIPT KAMU
+    // URL GOOGLE APPS SCRIPT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
 
     let keranjang = [];
@@ -223,66 +265,65 @@ if ('serviceWorker' in navigator) {
       return "lainnya";
     }
 
-   function loadData() {
-  // Panggil via JSONP Script Element (Bypass Blokir CORS Browser)
-  const script = document.createElement('script');
-  const callbackName = 'cb_stok_' + Math.floor(Math.random() * 10000);
+    function loadData() {
+      const script = document.createElement('script');
+      const callbackName = 'cb_stok_' + Math.floor(Math.random() * 10000);
 
-  window[callbackName] = function(data) {
-    document.getElementById("loadingMenu").style.display = "none";
-    if (data.status === "success") {
-      document.getElementById("valOmzet").innerText = "Rp " + (data.omzetHarian || 0).toLocaleString("id-ID");
-      document.getElementById("stokSummary").innerText = `Dimsum (${data.stokDimsumPcs || 0}) | Tahu (${data.stokTahuPcs || 0}) | Goreng (${data.stokDimsumGorengPcs || 0})`;
-      renderMenuAccordions(data.menu || []);
-    } else {
-      document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Error: " + data.message + "</p>";
+      window[callbackName] = function(data) {
+        document.getElementById("loadingMenu").style.display = "none";
+        if (data.status === "success") {
+          document.getElementById("valOmzet").innerText = "Rp " + (data.omzetHarian || 0).toLocaleString("id-ID");
+          document.getElementById("stokSummary").innerText = `Dimsum (${data.stokDimsumPcs || 0}) | Tahu (${data.stokTahuPcs || 0}) | Goreng (${data.stokDimsumGorengPcs || 0})`;
+          renderMenuAccordions(data.menu || []);
+        } else {
+          document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Error: " + data.message + "</p>";
+        }
+        delete window[callbackName];
+        document.body.removeChild(script);
+      };
+
+      script.src = SCRIPT_URL + "?action=getStok&callback=" + callbackName + "&t=" + new Date().getTime();
+      script.onerror = function() {
+        document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Gagal terhubung ke Google Sheets!</p>";
+      };
+      document.body.appendChild(script);
+
+      loadPendingOrders();
     }
-    delete window[callbackName];
-    document.body.removeChild(script);
-  };
 
-  script.src = SCRIPT_URL + "?action=getStok&callback=" + callbackName + "&t=" + new Date().getTime();
-  script.onerror = function() {
-    document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Gagal terhubung ke Google Sheets!</p>";
-  };
-  document.body.appendChild(script);
+    function loadPendingOrders() {
+      const script = document.createElement('script');
+      const callbackName = 'cb_pending_' + Math.floor(Math.random() * 10000);
 
-  loadPendingOrders();
-}
+      window[callbackName] = function(orders) {
+        const container = document.getElementById("onlinePendingList");
+        document.getElementById("onlineCount").innerText = orders ? orders.length : 0;
 
-function loadPendingOrders() {
-  const script = document.createElement('script');
-  const callbackName = 'cb_pending_' + Math.floor(Math.random() * 10000);
+        if (!orders || orders.length === 0) {
+          container.innerHTML = `<p style="font-size: 11px; color: #92400e; text-align: center;">Tidak ada pesanan online pending.</p>`;
+        } else {
+          container.innerHTML = "";
+          orders.forEach(ord => {
+            container.innerHTML += `
+              <div class="pending-item">
+                <b>${ord.namaPelanggan}</b> (${ord.nomorWA})<br>
+                <span style="color:#555;">${ord.produk}</span><br>
+                <b>Total: Rp ${Number(ord.totalHarga).toLocaleString("id-ID")}</b>
+                <div class="pending-actions">
+                  <button class="btn-sm btn-acc" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
+                  <button class="btn-sm btn-dec" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
+                </div>
+              </div>
+            `;
+          });
+        }
+        delete window[callbackName];
+        document.body.removeChild(script);
+      };
 
-  window[callbackName] = function(orders) {
-    const container = document.getElementById("onlinePendingList");
-    document.getElementById("onlineCount").innerText = orders ? orders.length : 0;
-
-    if (!orders || orders.length === 0) {
-      container.innerHTML = `<p style="font-size: 11px; color: #92400e; text-align: center;">Tidak ada pesanan online pending.</p>`;
-    } else {
-      container.innerHTML = "";
-      orders.forEach(ord => {
-        container.innerHTML += `
-          <div class="pending-item">
-            <b>${ord.namaPelanggan}</b> (${ord.nomorWA})<br>
-            <span style="color:#555;">${ord.produk}</span><br>
-            <b>Total: Rp ${Number(ord.totalHarga).toLocaleString("id-ID")}</b>
-            <div class="pending-actions">
-              <button class="btn-sm btn-acc" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
-              <button class="btn-sm btn-dec" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
-            </div>
-          </div>
-        `;
-      });
+      script.src = SCRIPT_URL + "?action=getPendingOrders&callback=" + callbackName + "&t=" + new Date().getTime();
+      document.body.appendChild(script);
     }
-    delete window[callbackName];
-    document.body.removeChild(script);
-  };
-
-  script.src = SCRIPT_URL + "?action=getPendingOrders&callback=" + callbackName + "&t=" + new Date().getTime();
-  document.body.appendChild(script);
-}
 
     function konfirmasiOrder(rowIndex, action) {
       fetch(SCRIPT_URL, {
@@ -291,7 +332,6 @@ function loadPendingOrders() {
       })
       .then(res => res.json())
       .then(data => {
-        alert(data.message);
         loadData();
       });
     }
@@ -355,20 +395,17 @@ function loadPendingOrders() {
     }
 
     function toggleAccordion(id) {
-  // Ambil semua elemen kategori
-  const allGroups = document.querySelectorAll('.category-group');
-  const targetGroup = document.getElementById(id);
+      const allGroups = document.querySelectorAll('.category-group');
+      const targetGroup = document.getElementById(id);
 
-  // Tutup semua kategori LAINNYA
-  allGroups.forEach(group => {
-    if (group !== targetGroup) {
-      group.classList.add('collapsed');
+      allGroups.forEach(group => {
+        if (group !== targetGroup) {
+          group.classList.add('collapsed');
+        }
+      });
+
+      targetGroup.classList.toggle('collapsed');
     }
-  });
-
-  // Buka/Tutup kategori yang diklik
-  targetGroup.classList.toggle('collapsed');
-}
 
     function sanitizeId(str) {
       return str.replace(/[^a-zA-Z0-9]/g, "_");
@@ -421,7 +458,7 @@ function loadPendingOrders() {
               <button class="btn-del" onclick="hapusItem(${idx})"><i class="fa-solid fa-trash"></i></button>
               <span>${item.produk} (x${item.qty})</span>
             </div>
-              <b>Rp ${item.subtotal.toLocaleString("id-ID")}</b>
+            <b>Rp ${item.subtotal.toLocaleString("id-ID")}</b>
           </div>
         `;
       });
@@ -440,6 +477,9 @@ function loadPendingOrders() {
       const nomorWA = document.getElementById("custWA").value || "-";
       const diskon = Number(document.getElementById("inputDiskon").value) || 0;
 
+      let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+      let totalBayar = Math.max(0, subtotal - diskon);
+
       const payload = {
         namaPelanggan: pelanggan,
         nomorWA: nomorWA,
@@ -454,9 +494,17 @@ function loadPendingOrders() {
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") {
-          alert("Transaksi berhasil disimpan!");
+          document.getElementById("posModalNama").innerText = pelanggan;
+          document.getElementById("posModalWA").innerText = nomorWA;
+          document.getElementById("posModalTotal").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+
+          const modal = document.getElementById("modalKasirSukses");
+          modal.style.display = "flex";
+
           keranjang = [];
           document.getElementById("inputDiskon").value = 0;
+          document.getElementById("custName").value = "Dine In / Nama";
+          document.getElementById("custWA").value = "";
           renderCart();
           loadData();
         } else {
@@ -464,6 +512,10 @@ function loadPendingOrders() {
         }
       })
       .catch(err => alert("Terjadi kesalahan koneksi."));
+    }
+
+    function tutupModalKasir() {
+      document.getElementById("modalKasirSukses").style.display = "none";
     }
 
     document.addEventListener("DOMContentLoaded", () => {
