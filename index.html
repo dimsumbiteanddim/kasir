@@ -45,6 +45,23 @@
     
     .btn-header { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px; }
 
+    /* TOMBOL INSTALL PWA */
+    .btn-install-pwa {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      display: none; /* Otomatis tampil jika browser mendukung PWA */
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .btn-install-pwa:hover { opacity: 0.9; }
+
     /* LAYOUT MAIN */
     .main-container { display: flex; gap: 6px; padding: 6px; max-width: 100%; margin: 0 auto; width: 100%; box-sizing: border-box; }
     .left-panel { flex: 1; min-width: 0; }
@@ -111,6 +128,11 @@
       <span>Live Sync Dapur</span>
     </div>
     <div class="header-controls">
+      <!-- TOMBOL INSTALL PWA -->
+      <button id="btnInstallPwa" class="btn-install-pwa" onclick="installPWA()">
+        <i class="fa-solid fa-download"></i> Install App
+      </button>
+
       <div class="omzet-box">
         <span class="label">OMZET</span>
         <span class="value" id="valOmzet">Rp 0</span>
@@ -182,7 +204,7 @@
     </div>
   </div>
 
-  <!-- 📢 MODAL NOTIFIKASI TRANSAKSI BERHASIL (GREEN THEME PROFESSIONAL) -->
+  <!-- 📢 MODAL NOTIFIKASI TRANSAKSI BERHASIL -->
   <div id="modalKasirSukses" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 30, 40, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
     <div style="background: #ffffff; width: 100%; max-width: 360px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #a7f3d0; animation: modalPop 0.3s ease-out;">
       
@@ -221,6 +243,35 @@
   </div>
 
   <script>
+    // 📲 LOGIKA PWA & INSTALL PROMPT
+    let deferredPrompt;
+    const btnInstallPwa = document.getElementById('btnInstallPwa');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (btnInstallPwa) {
+        btnInstallPwa.style.display = 'flex';
+      }
+    });
+
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User menerima instalasi PWA');
+        }
+        deferredPrompt = null;
+        if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+      deferredPrompt = null;
+    });
+
     // Registrasi & Cek Pembaruan Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(reg => {
