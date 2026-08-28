@@ -1,5 +1,5 @@
 // Gantilah nama/versi cache setiap kali ada perubahan ikon, gambar, atau file web
-const CACHE_NAME = 'bite-and-dim-v2';
+const CACHE_NAME = 'bite-and-dim-v3';
 
 // Daftar file yang akan disimpan dalam cache offline
 const ASSETS_TO_CACHE = [
