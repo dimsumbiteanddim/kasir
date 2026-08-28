@@ -117,8 +117,8 @@
     .input-group-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
     .input-group-row input { width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
 
-    /* INTEGRASI CHECK MEMBER BOX */
-    .member-check-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    /* INTEGRASI CHECK MEMBER BOX & DROPDOWN */
+    .member-check-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px; margin-bottom: 8px; position: relative; }
     .member-check-box label { font-size: 10px; font-weight: bold; color: #166534; display: block; margin-bottom: 4px; }
     .member-input-group { display: flex; gap: 6px; }
     .member-input-group input { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
@@ -138,7 +138,6 @@
     .btn-proses { width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(5,150,105,0.2); }
     .btn-proses:active { transform: scale(0.98); }
     
-    /* STYLE UNTUK TOMBOL DISABLED */
     button:disabled {
       background-color: #94a3b8 !important;
       color: #ffffff !important;
@@ -281,13 +280,17 @@
             <small style="background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: bold;">Offline / Dine-In</small>
           </div>
 
-          <!-- INTEGRASI CEK MEMBER KASIR -->
+          <!-- INTEGRASI CEK MEMBER KASIR DENGAN AUTOCOMPLETE DROPDOWN -->
           <div class="member-check-box">
-            <label><i class="fa-solid fa-id-card"></i> Cek / Input WA Member</label>
+            <label><i class="fa-solid fa-id-card"></i> Cari Member (Nama / WA)</label>
             <div class="member-input-group">
-              <input type="tel" id="custWA" placeholder="08xxx (Member WA)" onkeyup="autoCekMember()">
-              <button class="btn-cek-member" onclick="autoCekMember()">Cari</button>
+              <input type="text" id="custWA" placeholder="Ketik Nama atau No. WA..." onkeyup="cariSuggestMember()" autocomplete="off">
+              <button class="btn-cek-member" onclick="cariSuggestMember()"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
+            
+            <!-- DROPDOWN OPTION KE BAWAH -->
+            <div id="memberSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 50; max-height: 160px; overflow-y: auto;"></div>
+
             <div id="memberBadgeStatus" class="member-badge-status"></div>
           </div>
 
@@ -491,40 +494,86 @@
     document.body.appendChild(script);
   }
 
-  // === PENGECEKAN MEMBER: AKAN MENDAPATKAN DISKON OTOMATIS SAAT TRANSAKSI KE-6 (STAMP = 5) ===
-  function autoCekMember() {
-    const wa = document.getElementById("custWA").value.trim();
+  // === FITUR AUTOCOMPLETE SUGGESTION MEMBER (NAMA & WA) ===
+  function cariSuggestMember() {
+    const input = document.getElementById("custWA").value.trim().toLowerCase();
+    const boxSuggest = document.getElementById("memberSuggestions");
     const badge = document.getElementById("memberBadgeStatus");
 
-    if (!wa) {
-      badge.style.display = 'none';
+    if (!input) {
+      boxSuggest.style.display = "none";
+      badge.style.display = "none";
       renderCart();
       return;
     }
 
+    // Cari kecocokan berdasarkan NAMA atau NOMOR WA
+    const matches = serverMembers.filter(m => 
+      m.nama.toLowerCase().includes(input) || String(m.wa).includes(input)
+    );
+
+    if (matches.length > 0) {
+      boxSuggest.innerHTML = "";
+      matches.forEach(m => {
+        boxSuggest.innerHTML += `
+          <div onclick="pilihMember('${m.nama}', '${m.wa}')" style="padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 11px; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+            <div>
+              <b>${m.nama}</b> <small style="color: #64748b;">(${m.wa})</small>
+            </div>
+            <span style="font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 4px; ${m.stamp >= 5 ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">
+              ${m.stamp}/5 Stamp
+            </span>
+          </div>
+        `;
+      });
+      boxSuggest.style.display = "block";
+    } else {
+      boxSuggest.style.display = "none";
+      badge.style.display = "block";
+      badge.style.background = "#fef2f2";
+      badge.style.color = "#991b1b";
+      badge.innerHTML = `⚠️ Member tidak ditemukan!`;
+      renderCart();
+    }
+  }
+
+  function pilihMember(nama, wa) {
+    document.getElementById("custName").value = nama;
+    document.getElementById("custWA").value = wa;
+    document.getElementById("memberSuggestions").style.display = "none";
+
+    terapkanStatusMember(nama, wa);
+  }
+
+  function terapkanStatusMember(nama, wa) {
+    const badge = document.getElementById("memberBadgeStatus");
     const found = serverMembers.find(m => m.wa === wa);
+
     if (found) {
-      document.getElementById("custName").value = found.nama;
-      badge.style.display = 'block';
+      badge.style.display = "block";
 
       if (found.stamp >= 5) {
-        badge.style.background = '#dcfce7';
-        badge.style.color = '#15803d';
+        badge.style.background = "#dcfce7";
+        badge.style.color = "#15803d";
         badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: OTOMATIS DISKON 10%!</b>`;
       } else {
-        badge.style.background = '#fef2f2';
-        badge.style.color = '#991b1b';
+        badge.style.background = "#f1f5f9";
+        badge.style.color = "#1e293b";
         badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk klaim diskon 10%</i>`;
       }
-    } else {
-      badge.style.display = 'block';
-      badge.style.background = '#fef2f2';
-      badge.style.color = '#991b1b';
-      badge.innerHTML = `⚠️ Member belum terdaftar! Silakan daftarkan di Tab Member.`;
     }
 
     renderCart();
   }
+
+  // Menutup dropdown jika user klik di luar area
+  document.addEventListener("click", function(e) {
+    const boxSuggest = document.getElementById("memberSuggestions");
+    const inputWA = document.getElementById("custWA");
+    if (boxSuggest && !inputWA.contains(e.target) && !boxSuggest.contains(e.target)) {
+      boxSuggest.style.display = "none";
+    }
+  });
 
   function simpanMemberBaru(e) {
     e.preventDefault();
@@ -756,7 +805,7 @@
     renderCart();
   }
 
-  // === RENDER CART DENGAN KALKULASI AUTO DISKON 10% KHUSUS STAMP >= 5 ===
+  // === RENDER CART DENGAN AUTO DISKON 10% KHUSUS STAMP >= 5 ===
   function renderCart() {
     const container = document.getElementById("cartContainer");
     if (keranjang.length === 0) {
