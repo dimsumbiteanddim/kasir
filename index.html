@@ -75,13 +75,45 @@
     .modul-page { width: 100%; }
     .modul-page.hidden { display: none !important; }
 
-    /* LAYOUT MAIN KASIR */
-    .main-container { display: flex; flex-direction: column; gap: 8px; padding: 8px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-    @media (min-width: 768px) {
-      .main-container { flex-direction: row; align-items: flex-start; }
+    /* LAYOUT MAIN KASIR - BERDAMPINGAN */
+    .main-container { 
+      display: flex; 
+      flex-direction: row; 
+      gap: 12px; 
+      padding: 10px; 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      width: 100%; 
+      box-sizing: border-box; 
+      align-items: flex-start;
     }
-    .left-panel { flex: 1.2; min-width: 0; }
-    .right-panel { flex: 0.8; display: flex; flex-direction: column; gap: 8px; min-width: 0; position: sticky; top: 60px; z-index: 20; }
+
+    /* KIRI: MENU (60% Lebar) */
+    .left-panel { 
+      flex: 6; 
+      min-width: 0; 
+    }
+
+    /* KANAN: KERANJANG (40% Lebar) */
+    .right-panel { 
+      flex: 4; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      min-width: 0; 
+      position: static; 
+    }
+
+    /* RESPONSIVE LAYAR HP (< 768px) ATAS-BAWAH */
+    @media (max-width: 767px) {
+      .main-container { 
+        flex-direction: column; 
+      }
+      .left-panel, .right-panel { 
+        width: 100%; 
+        flex: none; 
+      }
+    }
 
     /* STOK SUMMARY */
     .stok-bar { background: white; padding: 8px 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -91,7 +123,7 @@
     /* ACCORDION CATEGORIES */
     .category-group { margin-bottom: 8px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .category-header { padding: 10px 12px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .category-body { background: white; padding: 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+    .category-body { background: white; padding: 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
     .category-group.collapsed .category-body { display: none; }
 
     /* MENU CARD */
@@ -117,7 +149,6 @@
     .input-group-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
     .input-group-row input { width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
 
-    /* INTEGRASI CHECK MEMBER BOX & DROPDOWN */
     .member-check-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px; margin-bottom: 8px; position: relative; }
     .member-check-box label { font-size: 10px; font-weight: bold; color: #166534; display: block; margin-bottom: 4px; }
     .member-input-group { display: flex; gap: 6px; }
@@ -125,7 +156,7 @@
     .btn-cek-member { background: #16a085; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; }
     .member-badge-status { margin-top: 6px; font-size: 10px; font-weight: bold; background: #dcfce7; color: #15803d; padding: 6px; border-radius: 6px; display: none; line-height: 1.4; }
 
-    .cart-list { max-height: 220px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .cart-list { max-height: 280px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
     .cart-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 6px; }
     .cart-row-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
     .cart-row-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
@@ -196,7 +227,6 @@
     .nav-item.active { color: #d35400; }
     .nav-item i { font-size: 18px; }
 
-    /* TOMBOL MELAYANG QR CODE */
     .nav-qr-wrapper { position: relative; top: -16px; display: flex; flex-direction: column; align-items: center; }
     .btn-qr-floating {
       width: 48px;
@@ -245,7 +275,7 @@
   <!-- MODUL 1: KASIR Utama -->
   <div id="modulKasir" class="modul-page">
     <div class="main-container">
-      <!-- LEFT PANEL: MENU -->
+      <!-- LEFT PANEL: MENU (KIRI 60%) -->
       <div class="left-panel">
         <div class="stok-bar">
           <h3><i class="fa-solid fa-utensils"></i> Kartu Menu (Offline / Dine In)</h3>
@@ -260,7 +290,7 @@
         <div id="accordionContainer"></div>
       </div>
 
-      <!-- RIGHT PANEL: ONLINE & KASIR (STICKY) -->
+      <!-- RIGHT PANEL: ONLINE & KERANJANG (KANAN 40%) -->
       <div class="right-panel">
         <!-- PESANAN ONLINE PENDING -->
         <div class="panel-card" style="background: #fffdf5; border: 1px solid #fef3c7;">
@@ -288,7 +318,6 @@
               <button class="btn-cek-member" onclick="cariSuggestMember()"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
             
-            <!-- DROPDOWN OPTION KE BAWAH -->
             <div id="memberSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 50; max-height: 160px; overflow-y: auto;"></div>
 
             <div id="memberBadgeStatus" class="member-badge-status"></div>
@@ -599,6 +628,7 @@
 
     fetch(SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     })
@@ -713,6 +743,7 @@
   function konfirmasiOrder(rowIndex, action) {
     fetch(SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, rowIndex: rowIndex })
     }).then(() => {
@@ -882,6 +913,7 @@
 
     fetch(SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     })
@@ -900,7 +932,7 @@
       renderCart();
       setTimeout(loadData, 1000);
     })
-    .catch(() => alert("Terjadi kesalahan koneksi."))
+    .catch((err) => alert("Terjadi kesalahan koneksi: " + err))
     .finally(() => {
       btnBayar.disabled = false;
       btnBayar.innerHTML = teksAsli;
