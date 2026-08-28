@@ -482,7 +482,22 @@
     }
   }
 
-  function bukaModalQR() { document.getElementById('modalQrScanner').style.display = 'flex'; }
+  function bukaModalQR() {
+  // 1. Hitung total belanja langsung dari array keranjang
+  let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+  
+  // 2. Ambil diskon dari input
+  let diskon = Number(document.getElementById("inputDiskon").value) || 0;
+  
+  // 3. Kalkulasi total akhir
+  let totalBayar = Math.max(0, subtotal - diskon);
+
+  // 4. Masukkan angka ke modal QRIS
+  document.getElementById("qrisNominalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+  
+  // 5. Tampilkan modal
+  document.getElementById('modalQrScanner').style.display = 'flex';
+}
   function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
 
   function loadMembers() {
