@@ -810,8 +810,19 @@
   }
 
   function toggleAccordion(id) {
-    document.getElementById(id).classList.toggle('collapsed');
+  const target = document.getElementById(id);
+  const isAlreadyOpen = !target.classList.contains('collapsed');
+
+  // 1. Tutup (kempiskan) semua kategori
+  document.querySelectorAll('.category-group').forEach(group => {
+    group.classList.add('collapsed');
+  });
+
+  // 2. Jika kategori yang diklik tadinya tertutup, buka kategori tersebut
+  if (!isAlreadyOpen) {
+    target.classList.remove('collapsed');
   }
+}
 
   function sanitizeId(str) {
     return str.replace(/[^a-zA-Z0-9]/g, "_");
