@@ -78,10 +78,10 @@
     /* LAYOUT MAIN KASIR */
     .main-container { display: flex; flex-direction: column; gap: 8px; padding: 8px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
     @media (min-width: 768px) {
-      .main-container { flex-direction: row; }
+      .main-container { flex-direction: row; align-items: flex-start; }
     }
     .left-panel { flex: 1.2; min-width: 0; }
-    .right-panel { flex: 0.8; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .right-panel { flex: 0.8; display: flex; flex-direction: column; gap: 8px; min-width: 0; position: sticky; top: 60px; z-index: 20; }
 
     /* STOK SUMMARY */
     .stok-bar { background: white; padding: 8px 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -125,7 +125,7 @@
     .btn-cek-member { background: #16a085; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; }
     .member-badge-status { margin-top: 6px; font-size: 10px; font-weight: bold; background: #dcfce7; color: #15803d; padding: 6px; border-radius: 6px; display: none; line-height: 1.4; }
 
-    .cart-list { max-height: 180px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .cart-list { max-height: 220px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
     .cart-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 6px; }
     .cart-row-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
     .cart-row-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
@@ -260,7 +260,7 @@
         <div id="accordionContainer"></div>
       </div>
 
-      <!-- RIGHT PANEL: ONLINE & KASIR -->
+      <!-- RIGHT PANEL: ONLINE & KASIR (STICKY) -->
       <div class="right-panel">
         <!-- PESANAN ONLINE PENDING -->
         <div class="panel-card" style="background: #fffdf5; border: 1px solid #fef3c7;">
@@ -273,12 +273,12 @@
           </div>
         </div>
         
-<!-- KERANJANG KASIR -->
-        <div class="panel-card" style="position: sticky; top: 15px; z-index: 10;">
-  <div class="panel-title">
-    <span><i class="fa-solid fa-cart-shopping"></i> Keranjang Kasir</span>
-    <small style="background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: bold;">Offline / Dine-In</small>
-  </div>
+        <!-- KERANJANG KASIR -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <span><i class="fa-solid fa-cart-shopping"></i> Keranjang Kasir</span>
+            <small style="background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: bold;">Offline / Dine-In</small>
+          </div>
 
           <!-- INTEGRASI CEK MEMBER KASIR DENGAN AUTOCOMPLETE DROPDOWN -->
           <div class="member-check-box">
@@ -372,11 +372,10 @@
         <img src="https://lh3.googleusercontent.com/d/1_N38UgZgpj6zno0LGjQj74vHk4xh7x_Q" alt="QRIS Toko" style="width: 100%; height: auto; display: block; border-radius: 8px;">
       </div>
 
-      <!-- NOMINAL YANG HARUS DIBAYARKAN DI BAWAH QRIS -->
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 10px; margin-bottom: 16px;">
-      <span style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Total Tagihan / Nominal:</span>
-      <h2 id="qrisNominalBayar" style="font-size: 20px; font-weight: 800; color: #d35400; margin-top: 2px;">Rp 0</h2>
-    </div>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 10px; margin-bottom: 16px;">
+        <span style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Total Tagihan / Nominal:</span>
+        <h2 id="qrisNominalBayar" style="font-size: 20px; font-weight: 800; color: #d35400; margin-top: 2px;">Rp 0</h2>
+      </div>
 
       <button onclick="tutupModalQR()" style="background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
         TUTUP
@@ -483,21 +482,14 @@
   }
 
   function bukaModalQR() {
-  // 1. Hitung total belanja langsung dari array keranjang
-  let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
-  
-  // 2. Ambil diskon dari input
-  let diskon = Number(document.getElementById("inputDiskon").value) || 0;
-  
-  // 3. Kalkulasi total akhir
-  let totalBayar = Math.max(0, subtotal - diskon);
+    let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+    let diskon = Number(document.getElementById("inputDiskon").value) || 0;
+    let totalBayar = Math.max(0, subtotal - diskon);
 
-  // 4. Masukkan angka ke modal QRIS
-  document.getElementById("qrisNominalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
-  
-  // 5. Tampilkan modal
-  document.getElementById('modalQrScanner').style.display = 'flex';
-}
+    document.getElementById("qrisNominalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+    document.getElementById('modalQrScanner').style.display = 'flex';
+  }
+
   function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
 
   function loadMembers() {
@@ -515,7 +507,6 @@
     document.body.appendChild(script);
   }
 
-  // === FITUR AUTOCOMPLETE SUGGESTION MEMBER (NAMA & WA) ===
   function cariSuggestMember() {
     const input = document.getElementById("custWA").value.trim().toLowerCase();
     const boxSuggest = document.getElementById("memberSuggestions");
@@ -528,7 +519,6 @@
       return;
     }
 
-    // Cari kecocokan berdasarkan NAMA atau NOMOR WA
     const matches = serverMembers.filter(m => 
       m.nama.toLowerCase().includes(input) || String(m.wa).includes(input)
     );
@@ -587,7 +577,6 @@
     renderCart();
   }
 
-  // Menutup dropdown jika user klik di luar area
   document.addEventListener("click", function(e) {
     const boxSuggest = document.getElementById("memberSuggestions");
     const inputWA = document.getElementById("custWA");
@@ -610,8 +599,7 @@
 
     fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     })
     .then(() => {
@@ -725,8 +713,7 @@
   function konfirmasiOrder(rowIndex, action) {
     fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, rowIndex: rowIndex })
     }).then(() => {
       setTimeout(loadData, 1000);
@@ -826,7 +813,6 @@
     renderCart();
   }
 
-  // === RENDER CART DENGAN AUTO DISKON 10% KHUSUS STAMP >= 5 ===
   function renderCart() {
     const container = document.getElementById("cartContainer");
     if (keranjang.length === 0) {
@@ -857,11 +843,9 @@
     const foundMember = serverMembers.find(m => m.wa === wa);
     
     if (foundMember && foundMember.stamp >= 5) {
-      // Diskon otomatis terpasang hanya jika stamp sudah pas 5 (pembelian ke-6)
       const autoDiskon = Math.round(subtotal * 0.1);
       document.getElementById("inputDiskon").value = autoDiskon;
     } else {
-      // Jika stamp < 5, diskon otomatis dikembalikan ke 0
       document.getElementById("inputDiskon").value = 0;
     }
 
@@ -898,8 +882,7 @@
 
     fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     })
     .then(() => {
