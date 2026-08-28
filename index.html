@@ -501,6 +501,7 @@
 
     if (!wa) {
       badge.style.display = 'none';
+      renderCart();
       return;
     }
 
@@ -513,11 +514,6 @@
 
       if (found.stamp >= 5) {
         badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: Siap Diskon 10%!</b>`;
-        let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
-        if (subtotal > 0) {
-          document.getElementById("inputDiskon").value = Math.round(subtotal * 0.1);
-          renderCart();
-        }
       } else {
         badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk diskon 10%</i>`;
       }
@@ -527,6 +523,8 @@
       badge.style.color = '#991b1b';
       badge.innerHTML = `⚠️ Member belum terdaftar! Silakan daftarkan di Tab Member.`;
     }
+
+    renderCart();
   }
 
   // === SIMPAN MEMBER BARU KE GOOGLE SHEETS ===
@@ -757,13 +755,11 @@
     stateQty[nama] = 1;
     document.getElementById("inputQty_" + sanitizeId(nama)).value = 1;
     renderCart();
-    autoCekMember();
   }
 
   function hapusItem(index) {
     keranjang.splice(index, 1);
     renderCart();
-    autoCekMember();
   }
 
   function renderCart() {
@@ -772,6 +768,7 @@
       container.innerHTML = `<p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 20px;">Belum ada menu dipilih.</p>`;
       document.getElementById("txtSubtotal").innerText = "Rp 0";
       document.getElementById("txtTotalBayar").innerText = "Rp 0";
+      document.getElementById("inputDiskon").value = 0;
       return;
     }
 
@@ -791,6 +788,14 @@
       `;
     });
 
+    // AUTO CALCULATE DISKON MEMBER (Stamp >= 5)
+    const wa = document.getElementById("custWA").value.trim();
+    const foundMember = serverMembers.find(m => m.wa === wa);
+    if (foundMember && foundMember.stamp >= 5) {
+      const autoDiskon = Math.round(subtotal * 0.1);
+      document.getElementById("inputDiskon").value = autoDiskon;
+    }
+
     const diskon = Number(document.getElementById("inputDiskon").value) || 0;
     const totalBayar = Math.max(0, subtotal - diskon);
 
@@ -802,7 +807,7 @@
     if (keranjang.length === 0) return alert("Keranjang masih kosong!");
 
     const btnBayar = document.getElementById("btnProsesBayar");
-    if (btnBayar.disabled) return; // Cegah eksekusi ganda jika tombol sedang terkunci
+    if (btnBayar.disabled) return;
 
     const teksAsli = btnBayar.innerHTML;
     btnBayar.disabled = true;
