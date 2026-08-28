@@ -137,6 +137,16 @@
 
     .btn-proses { width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(5,150,105,0.2); }
     .btn-proses:active { transform: scale(0.98); }
+    
+    /* STYLE UNTUK TOMBOL DISABLED */
+    button:disabled {
+      background-color: #94a3b8 !important;
+      color: #ffffff !important;
+      cursor: not-allowed !important;
+      opacity: 0.7 !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
 
     /* LAYOUT MODUL MEMBERSHIP */
     .member-container { padding: 10px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
@@ -302,7 +312,7 @@
             <span id="txtTotalBayar">Rp 0</span>
           </div>
 
-          <button class="btn-proses" onclick="prosesBayar()"><i class="fa-solid fa-money-bill-wave"></i> PROSES BAYAR & SELESAI</button>
+          <button id="btnProsesBayar" class="btn-proses" onclick="prosesBayar()"><i class="fa-solid fa-money-bill-wave"></i> PROSES BAYAR & SELESAI</button>
         </div>
       </div>
     </div>
@@ -791,6 +801,13 @@
   function prosesBayar() {
     if (keranjang.length === 0) return alert("Keranjang masih kosong!");
 
+    const btnBayar = document.getElementById("btnProsesBayar");
+    if (btnBayar.disabled) return; // Cegah eksekusi ganda jika tombol sedang terkunci
+
+    const teksAsli = btnBayar.innerHTML;
+    btnBayar.disabled = true;
+    btnBayar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> MEMPROSES...';
+
     const pelanggan = document.getElementById("custName").value || "Dine In / Nama";
     const nomorWA = document.getElementById("custWA").value || "-";
     const diskon = Number(document.getElementById("inputDiskon").value) || 0;
@@ -826,7 +843,11 @@
       renderCart();
       setTimeout(loadData, 1000);
     })
-    .catch(() => alert("Terjadi kesalahan koneksi."));
+    .catch(() => alert("Terjadi kesalahan koneksi."))
+    .finally(() => {
+      btnBayar.disabled = false;
+      btnBayar.innerHTML = teksAsli;
+    });
   }
 
   function tutupModalKasir() {
