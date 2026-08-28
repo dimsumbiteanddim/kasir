@@ -161,7 +161,7 @@
     .table-member th { background: #f8fafc; padding: 8px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: bold; }
     .table-member td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-    /* BOTTOM NAVIGATION BAR (CIRCLE K STYLE) */
+    /* BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -197,7 +197,7 @@
     .nav-item.active { color: #d35400; }
     .nav-item i { font-size: 18px; }
 
-    /* TOMBOL MELAYANG QR CODE (FIXED CSS) */
+    /* TOMBOL MELAYANG QR CODE */
     .nav-qr-wrapper { position: relative; top: -16px; display: flex; flex-direction: column; align-items: center; }
     .btn-qr-floating {
       width: 48px;
@@ -437,9 +437,8 @@
 
   let keranjang = [];
   let stateQty = {};
-  let serverMembers = []; // Data member disimpan di server Google Sheets
+  let serverMembers = [];
 
-  // CONFIG KATEGORI MENU
   const KATEGORI_CONFIG = [
     { key: "bundling", title: "🔥 PAKET BUNDLING PROMO", color: "#8e44ad" },
     { key: "original", title: "Dimsum Original", color: "#f39c12" },
@@ -451,7 +450,6 @@
     { key: "lainnya", title: "Menu Lainnya", color: "#2c3e50" }
   ];
 
-  // NAVIGATION TAB
   function switchPage(modul) {
     const mKasir = document.getElementById('modulKasir');
     const mMember = document.getElementById('modulMember');
@@ -478,7 +476,6 @@
   function bukaModalQR() { document.getElementById('modalQrScanner').style.display = 'flex'; }
   function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
 
-  // === AMBIL DATA MEMBER DARI GOOGLE SHEETS ===
   function loadMembers() {
     const script = document.createElement('script');
     const callbackName = 'cb_members_' + Math.floor(Math.random() * 10000);
@@ -494,7 +491,7 @@
     document.body.appendChild(script);
   }
 
-  // === CEK STATUS MEMBER SAAT TRANSAKSI ===
+  // === PENGECEKAN MEMBER: AKAN MENDAPATKAN DISKON OTOMATIS SAAT TRANSAKSI KE-6 (STAMP = 5) ===
   function autoCekMember() {
     const wa = document.getElementById("custWA").value.trim();
     const badge = document.getElementById("memberBadgeStatus");
@@ -509,13 +506,15 @@
     if (found) {
       document.getElementById("custName").value = found.nama;
       badge.style.display = 'block';
-      badge.style.background = '#dcfce7';
-      badge.style.color = '#15803d';
 
       if (found.stamp >= 5) {
-        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: Siap Diskon 10%!</b>`;
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: OTOMATIS DISKON 10%!</b>`;
       } else {
-        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk diskon 10%</i>`;
+        badge.style.background = '#fef2f2';
+        badge.style.color = '#991b1b';
+        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk klaim diskon 10%</i>`;
       }
     } else {
       badge.style.display = 'block';
@@ -527,7 +526,6 @@
     renderCart();
   }
 
-  // === SIMPAN MEMBER BARU KE GOOGLE SHEETS ===
   function simpanMemberBaru(e) {
     e.preventDefault();
     const nama = document.getElementById("mNama").value.trim();
@@ -538,11 +536,7 @@
       return;
     }
 
-    const payload = {
-      action: "simpanMember",
-      nama: nama,
-      wa: wa
-    };
+    const payload = { action: "simpanMember", nama: nama, wa: wa };
 
     fetch(SCRIPT_URL, {
       method: "POST",
@@ -577,7 +571,7 @@
           <td>⭐ ${m.stamp}/5</td>
           <td>
             <span style="padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px; ${isReady ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">
-              ${isReady ? '🎉 Diskon 10% Ready' : 'Pengumpulan'}
+              ${isReady ? '🎉 Diskon Ready (Trx ke-6)' : 'Pengumpulan'}
             </span>
           </td>
         </tr>
@@ -762,6 +756,7 @@
     renderCart();
   }
 
+  // === RENDER CART DENGAN KALKULASI AUTO DISKON 10% KHUSUS STAMP >= 5 ===
   function renderCart() {
     const container = document.getElementById("cartContainer");
     if (keranjang.length === 0) {
@@ -788,12 +783,16 @@
       `;
     });
 
-    // AUTO CALCULATE DISKON MEMBER (Stamp >= 5)
     const wa = document.getElementById("custWA").value.trim();
     const foundMember = serverMembers.find(m => m.wa === wa);
+    
     if (foundMember && foundMember.stamp >= 5) {
+      // Diskon otomatis terpasang hanya jika stamp sudah pas 5 (pembelian ke-6)
       const autoDiskon = Math.round(subtotal * 0.1);
       document.getElementById("inputDiskon").value = autoDiskon;
+    } else {
+      // Jika stamp < 5, diskon otomatis dikembalikan ke 0
+      document.getElementById("inputDiskon").value = 0;
     }
 
     const diskon = Number(document.getElementById("inputDiskon").value) || 0;
