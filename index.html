@@ -423,431 +423,420 @@
   </nav>
 
   <script>
-    // 📲 INSIALISASI VARIABEL & LOCALSTORAGE MEMBER
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
 
-    let keranjang = [];
-    let stateQty = {};
-    
-    // Simpan local member di localStorage browser
-    let localMembers = JSON.parse(localStorage.getItem('bite_dim_members') || '[]');
+  let keranjang = [];
+  let stateQty = {};
+  let serverMembers = []; // Data member disimpan di server Google Sheets
 
-    function saveLocalMembers() {
-      localStorage.setItem('bite_dim_members', JSON.stringify(localMembers));
+  // CONFIG KATEGORI MENU
+  const KATEGORI_CONFIG = [
+    { key: "bundling", title: "🔥 PAKET BUNDLING PROMO", color: "#8e44ad" },
+    { key: "original", title: "Dimsum Original", color: "#f39c12" },
+    { key: "mentai", title: "Dimsum Mentai", color: "#e67e22" },
+    { key: "keju", title: "Dimsum Keju", color: "#f1c40f" },
+    { key: "mix", title: "Dimsum Mix", color: "#16a085" },
+    { key: "goreng", title: "Dimsum Goreng Paket", color: "#c0392b" },
+    { key: "tahu", title: "Tahu Bakso Goreng", color: "#795548" },
+    { key: "lainnya", title: "Menu Lainnya", color: "#2c3e50" }
+  ];
+
+  // NAVIGATION TAB
+  function switchPage(modul) {
+    const mKasir = document.getElementById('modulKasir');
+    const mMember = document.getElementById('modulMember');
+    const nKasir = document.getElementById('navKasir');
+    const nMember = document.getElementById('navMember');
+    const hTitle = document.getElementById('headerTitle');
+
+    if (modul === 'kasir') {
+      mKasir.classList.remove('hidden');
+      mMember.classList.add('hidden');
+      nKasir.classList.add('active');
+      nMember.classList.remove('active');
+      hTitle.innerText = "KASIR POS – BITE & DIM";
+    } else {
+      mKasir.classList.add('hidden');
+      mMember.classList.remove('hidden');
+      nKasir.classList.remove('active');
+      nMember.classList.add('active');
+      hTitle.innerText = "MEMBERSHIP – BITE & DIM";
+      loadMembers();
+    }
+  }
+
+  function bukaModalQR() { document.getElementById('modalQrScanner').style.display = 'flex'; }
+  function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
+
+  // === AMBIL DATA MEMBER DARI GOOGLE SHEETS ===
+  function loadMembers() {
+    const script = document.createElement('script');
+    const callbackName = 'cb_members_' + Math.floor(Math.random() * 10000);
+
+    window[callbackName] = function(data) {
+      serverMembers = data || [];
+      renderTableMember();
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+
+    script.src = SCRIPT_URL + "?action=getMembers&callback=" + callbackName + "&t=" + new Date().getTime();
+    document.body.appendChild(script);
+  }
+
+  // === CEK STATUS MEMBER SAAT TRANSAKSI ===
+  function autoCekMember() {
+    const wa = document.getElementById("custWA").value.trim();
+    const badge = document.getElementById("memberBadgeStatus");
+
+    if (!wa) {
+      badge.style.display = 'none';
+      return;
     }
 
-    // PWA & INSTALL PROMPT LOGIC
-    let deferredPrompt;
-    const btnInstallPwa = document.getElementById('btnInstallPwa');
+    const found = serverMembers.find(m => m.wa === wa);
+    if (found) {
+      document.getElementById("custName").value = found.nama;
+      badge.style.display = 'block';
+      badge.style.background = '#dcfce7';
+      badge.style.color = '#15803d';
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (btnInstallPwa) btnInstallPwa.style.display = 'flex';
-    });
-
-    function installPWA() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-        if (btnInstallPwa) btnInstallPwa.style.display = 'none';
-      });
-    }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js') 
-          .then((reg) => console.log('SW Registered:', reg.scope))
-          .catch((err) => console.error('SW Register Error:', err));
-      });
-    }
-
-    // CONFIG KATEGORI MENU
-    const KATEGORI_CONFIG = [
-      { key: "bundling", title: "🔥 PAKET BUNDLING PROMO", color: "#8e44ad" },
-      { key: "original", title: "Dimsum Original", color: "#f39c12" },
-      { key: "mentai", title: "Dimsum Mentai", color: "#e67e22" },
-      { key: "keju", title: "Dimsum Keju", color: "#f1c40f" },
-      { key: "mix", title: "Dimsum Mix", color: "#16a085" },
-      { key: "goreng", title: "Dimsum Goreng Paket", color: "#c0392b" },
-      { key: "tahu", title: "Tahu Bakso Goreng", color: "#795548" },
-      { key: "lainnya", title: "Menu Lainnya", color: "#2c3e50" }
-    ];
-
-    // NAVIGATION TAB
-    function switchPage(modul) {
-      const mKasir = document.getElementById('modulKasir');
-      const mMember = document.getElementById('modulMember');
-      const nKasir = document.getElementById('navKasir');
-      const nMember = document.getElementById('navMember');
-      const hTitle = document.getElementById('headerTitle');
-
-      if (modul === 'kasir') {
-        mKasir.classList.remove('hidden');
-        mMember.classList.add('hidden');
-        nKasir.classList.add('active');
-        nMember.classList.remove('active');
-        hTitle.innerText = "KASIR POS – BITE & DIM";
-      } else {
-        mKasir.classList.add('hidden');
-        mMember.classList.remove('hidden');
-        nKasir.classList.remove('active');
-        nMember.classList.add('active');
-        hTitle.innerText = "MEMBERSHIP – BITE & DIM";
-        renderTableMember();
-      }
-    }
-
-    function bukaModalQR() { document.getElementById('modalQrScanner').style.display = 'flex'; }
-    function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
-
-    // LOGIKA MEMBERSHIP
-    function autoCekMember() {
-      const wa = document.getElementById("custWA").value.trim();
-      const badge = document.getElementById("memberBadgeStatus");
-
-      if (!wa) {
-        badge.style.display = 'none';
-        return;
-      }
-
-      const found = localMembers.find(m => m.wa === wa);
-      if (found) {
-        document.getElementById("custName").value = found.nama;
-        badge.style.display = 'block';
-        badge.style.background = '#dcfce7';
-        badge.style.color = '#15803d';
-
-        if (found.stamp >= 5) {
-          badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: Siap Diskon 10%!</b>`;
-          let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
-          if (subtotal > 0) {
-            document.getElementById("inputDiskon").value = Math.round(subtotal * 0.1);
-            renderCart();
-          }
-        } else {
-          badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk diskon 10%</i>`;
+      if (found.stamp >= 5) {
+        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: Siap Diskon 10%!</b>`;
+        let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+        if (subtotal > 0) {
+          document.getElementById("inputDiskon").value = Math.round(subtotal * 0.1);
+          renderCart();
         }
       } else {
-        badge.style.display = 'block';
-        badge.style.background = '#fef2f2';
-        badge.style.color = '#991b1b';
-        badge.innerHTML = `⚠️ Member belum terdaftar! Silakan daftarkan di Tab Member.`;
+        badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><i>Kumpulkan ${5 - found.stamp} stamp lagi untuk diskon 10%</i>`;
       }
+    } else {
+      badge.style.display = 'block';
+      badge.style.background = '#fef2f2';
+      badge.style.color = '#991b1b';
+      badge.innerHTML = `⚠️ Member belum terdaftar! Silakan daftarkan di Tab Member.`;
+    }
+  }
+
+  // === SIMPAN MEMBER BARU KE GOOGLE SHEETS ===
+  function simpanMemberBaru(e) {
+    e.preventDefault();
+    const nama = document.getElementById("mNama").value.trim();
+    const wa = document.getElementById("mWA").value.trim();
+
+    if (serverMembers.some(m => m.wa === wa)) {
+      alert("Nomor WA sudah terdaftar sebagai Member!");
+      return;
     }
 
-    function simpanMemberBaru(e) {
-      e.preventDefault();
-      const nama = document.getElementById("mNama").value.trim();
-      const wa = document.getElementById("mWA").value.trim();
+    const payload = {
+      action: "simpanMember",
+      nama: nama,
+      wa: wa
+    };
 
-      if (localMembers.some(m => m.wa === wa)) {
-        alert("Nomor WA sudah terdaftar sebagai Member!");
-        return;
-      }
-
-      localMembers.push({ nama: nama, wa: wa, stamp: 0 });
-      saveLocalMembers();
-      alert(`Member ${nama} berhasil didaftarkan!`);
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      alert(`Member ${nama} berhasil didaftarkan ke Google Sheets!`);
       document.getElementById("mNama").value = "";
       document.getElementById("mWA").value = "";
-      renderTableMember();
+      setTimeout(loadMembers, 1000);
+    })
+    .catch(() => alert("Gagal menyimpan member ke Google Sheets."));
+  }
+
+  function renderTableMember() {
+    const tbody = document.getElementById("tblMemberBody");
+    tbody.innerHTML = "";
+    
+    if (serverMembers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Belum ada data member di Google Sheets.</td></tr>`;
+      return;
     }
 
-    function renderTableMember() {
-      const tbody = document.getElementById("tblMemberBody");
-      tbody.innerHTML = "";
-      localMembers.forEach(m => {
-        const isReady = m.stamp >= 5;
-        tbody.innerHTML += `
-          <tr>
-            <td><b>${m.nama}</b></td>
-            <td>${m.wa}</td>
-            <td>⭐ ${m.stamp}/5</td>
-            <td>
-              <span style="padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px; ${isReady ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">
-                ${isReady ? '🎉 Diskon 10% Ready' : 'Pengumpulkan'}
-              </span>
-            </td>
-          </tr>
-        `;
-      });
-    }
+    serverMembers.forEach(m => {
+      const isReady = m.stamp >= 5;
+      tbody.innerHTML += `
+        <tr>
+          <td><b>${m.nama}</b></td>
+          <td>${m.wa}</td>
+          <td>⭐ ${m.stamp}/5</td>
+          <td>
+            <span style="padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px; ${isReady ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">
+              ${isReady ? '🎉 Diskon 10% Ready' : 'Pengumpulan'}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+  }
 
-    function deteksiKategori(namaProduk) {
-      const lower = namaProduk.toLowerCase();
-      if (lower.includes("ngemil") || lower.includes("duo") || lower.includes("sultan") || lower.includes("sekeluarga") || lower.includes("bundling")) return "bundling";
-      if (lower.includes("goreng")) return "goreng";
-      if (lower.includes("tahu") || lower.includes("bakso")) return "tahu";
-      if (lower.includes("mentai")) return "mentai";
-      if (lower.includes("keju")) return "keju";
-      if (lower.includes("mix")) return "mix";
-      if (lower.includes("original") || lower.includes("hemat") || lower.includes("kenyang") || lower.includes("ramean")) return "original";
-      return "lainnya";
-    }
+  function deteksiKategori(namaProduk) {
+    const lower = namaProduk.toLowerCase();
+    if (lower.includes("ngemil") || lower.includes("duo") || lower.includes("sultan") || lower.includes("sekeluarga") || lower.includes("bundling")) return "bundling";
+    if (lower.includes("goreng")) return "goreng";
+    if (lower.includes("tahu") || lower.includes("bakso")) return "tahu";
+    if (lower.includes("mentai")) return "mentai";
+    if (lower.includes("keju")) return "keju";
+    if (lower.includes("mix")) return "mix";
+    if (lower.includes("original") || lower.includes("hemat") || lower.includes("kenyang") || lower.includes("ramean")) return "original";
+    return "lainnya";
+  }
 
-    function loadData() {
-      const script = document.createElement('script');
-      const callbackName = 'cb_stok_' + Math.floor(Math.random() * 10000);
+  function loadData() {
+    const script = document.createElement('script');
+    const callbackName = 'cb_stok_' + Math.floor(Math.random() * 10000);
 
-      window[callbackName] = function(data) {
-        document.getElementById("loadingMenu").style.display = "none";
-        if (data.status === "success") {
-          document.getElementById("valOmzet").innerText = "Rp " + (data.omzetHarian || 0).toLocaleString("id-ID");
-          document.getElementById("stokSummary").innerText = `Dimsum (${data.stokDimsumPcs || 0}) | Tahu (${data.stokTahuPcs || 0}) | Goreng (${data.stokDimsumGorengPcs || 0})`;
-          renderMenuAccordions(data.menu || []);
-        } else {
-          document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Error: " + data.message + "</p>";
-        }
-        delete window[callbackName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-      };
+    window[callbackName] = function(data) {
+      document.getElementById("loadingMenu").style.display = "none";
+      if (data.status === "success") {
+        document.getElementById("valOmzet").innerText = "Rp " + (data.omzetHarian || 0).toLocaleString("id-ID");
+        document.getElementById("stokSummary").innerText = `Dimsum (${data.stokDimsumPcs || 0}) | Tahu (${data.stokTahuPcs || 0}) | Goreng (${data.stokDimsumGorengPcs || 0})`;
+        renderMenuAccordions(data.menu || []);
+      } else {
+        document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Error: " + data.message + "</p>";
+      }
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
 
-      script.src = SCRIPT_URL + "?action=getStok&callback=" + callbackName + "&t=" + new Date().getTime();
-      script.onerror = function() {
-        document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Gagal terhubung ke Google Sheets!</p>";
-      };
-      document.body.appendChild(script);
+    script.src = SCRIPT_URL + "?action=getStok&callback=" + callbackName + "&t=" + new Date().getTime();
+    script.onerror = function() {
+      document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Gagal terhubung ke Google Sheets!</p>";
+    };
+    document.body.appendChild(script);
 
-      loadPendingOrders();
-    }
+    loadPendingOrders();
+    loadMembers();
+  }
 
-    function loadPendingOrders() {
-      const script = document.createElement('script');
-      const callbackName = 'cb_pending_' + Math.floor(Math.random() * 10000);
+  function loadPendingOrders() {
+    const script = document.createElement('script');
+    const callbackName = 'cb_pending_' + Math.floor(Math.random() * 10000);
 
-      window[callbackName] = function(orders) {
-        const container = document.getElementById("onlinePendingList");
-        document.getElementById("onlineCount").innerText = orders ? orders.length : 0;
+    window[callbackName] = function(orders) {
+      const container = document.getElementById("onlinePendingList");
+      document.getElementById("onlineCount").innerText = orders ? orders.length : 0;
 
-        if (!orders || orders.length === 0) {
-          container.innerHTML = `<p style="font-size: 11px; color: #92400e; text-align: center;">Tidak ada pesanan online pending.</p>`;
-        } else {
-          container.innerHTML = "";
-          orders.forEach(ord => {
-            container.innerHTML += `
-              <div style="background:#ffffff; border:1px solid #fde68a; padding:8px; border-radius:6px; margin-bottom:6px; font-size:11px;">
-                <b>${ord.namaPelanggan}</b> (${ord.nomorWA})<br>
-                <span style="color:#555;">${ord.produk}</span><br>
-                <b>Total: Rp ${Number(ord.totalHarga).toLocaleString("id-ID")}</b>
-                <div style="display:flex; gap:4px; margin-top:4px;">
-                  <button style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
-                  <button style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
-                </div>
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `<p style="font-size: 11px; color: #92400e; text-align: center;">Tidak ada pesanan online pending.</p>`;
+      } else {
+        container.innerHTML = "";
+        orders.forEach(ord => {
+          container.innerHTML += `
+            <div style="background:#ffffff; border:1px solid #fde68a; padding:8px; border-radius:6px; margin-bottom:6px; font-size:11px;">
+              <b>${ord.namaPelanggan}</b> (${ord.nomorWA})<br>
+              <span style="color:#555;">${ord.produk}</span><br>
+              <b>Total: Rp ${Number(ord.totalHarga).toLocaleString("id-ID")}</b>
+              <div style="display:flex; gap:4px; margin-top:4px;">
+                <button style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
+                <button style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
               </div>
-            `;
-          });
-        }
-        delete window[callbackName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-      };
-
-      script.src = SCRIPT_URL + "?action=getPendingOrders&callback=" + callbackName + "&t=" + new Date().getTime();
-      document.body.appendChild(script);
-    }
-
-    function konfirmasiOrder(rowIndex, action) {
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: action, rowIndex: rowIndex })
-      }).then(() => {
-        setTimeout(loadData, 1000);
-      });
-    }
-
-    function renderMenuAccordions(menuList) {
-      const container = document.getElementById("accordionContainer");
-      container.innerHTML = "";
-
-      const grouped = {};
-      KATEGORI_CONFIG.forEach(k => grouped[k.key] = []);
-
-      menuList.forEach(item => {
-        const catKey = deteksiKategori(item.produk);
-        if (grouped[catKey]) grouped[catKey].push(item);
-        else grouped["lainnya"].push(item);
-      });
-
-      KATEGORI_CONFIG.forEach((cfg, idx) => {
-        const items = grouped[cfg.key];
-        if (!items || items.length === 0) return;
-
-        const isCollapsed = idx !== 0 ? "collapsed" : ""; 
-        
-        let html = `
-          <div class="category-group ${isCollapsed}" id="catGroup_${cfg.key}">
-            <div class="category-header" style="background-color: ${cfg.color};" onclick="toggleAccordion('catGroup_${cfg.key}')">
-              <span><i class="fa-solid fa-tags"></i> ${cfg.title}</span>
-              <span>${items.length} opsi <i class="fa-solid fa-chevron-down"></i></span>
-            </div>
-            <div class="category-body">
-        `;
-
-        items.forEach(item => {
-          if (!stateQty[item.produk]) stateQty[item.produk] = 1;
-
-          html += `
-            <div class="card-item">
-              <div class="card-top">
-                <span class="item-title">${item.produk}</span>
-                <span class="item-badge">${item.isiPcs > 1 ? 'Isi ' + item.isiPcs + ' pcs' : 'Porsi'}</span>
-              </div>
-              <div class="item-price">Rp ${item.harga.toLocaleString("id-ID")}</div>
-              <div class="item-stok">Maks: ${item.stok}</div>
-
-              <div class="qty-control">
-                <button class="qty-btn" onclick="updateTempQty('${item.produk}', -1)">-</button>
-                <input type="text" class="qty-input" id="inputQty_${sanitizeId(item.produk)}" value="${stateQty[item.produk]}" readonly>
-                <button class="qty-btn" onclick="updateTempQty('${item.produk}', 1)">+</button>
-              </div>
-
-              <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga})" ${item.stok <= 0 ? 'disabled style="opacity:0.5;"' : ''}>
-                ${item.stok <= 0 ? 'HABIS' : '+ TAMBAH'}
-              </button>
             </div>
           `;
         });
-
-        html += `</div></div>`;
-        container.innerHTML += html;
-      });
-    }
-
-    function toggleAccordion(id) {
-      const targetGroup = document.getElementById(id);
-      targetGroup.classList.toggle('collapsed');
-    }
-
-    function sanitizeId(str) {
-      return str.replace(/[^a-zA-Z0-9]/g, "_");
-    }
-
-    function updateTempQty(nama, delta) {
-      if (!stateQty[nama]) stateQty[nama] = 1;
-      stateQty[nama] = Math.max(1, stateQty[nama] + delta);
-      document.getElementById("inputQty_" + sanitizeId(nama)).value = stateQty[nama];
-    }
-
-    function tambahKeKeranjang(nama, harga) {
-      const qtyPilih = stateQty[nama] || 1;
-      const ada = keranjang.find(i => i.produk === nama);
-
-      if (ada) {
-        ada.qty += qtyPilih;
-        ada.subtotal = ada.qty * harga;
-      } else {
-        keranjang.push({ produk: nama, harga: harga, qty: qtyPilih, subtotal: harga * qtyPilih });
       }
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
 
-      stateQty[nama] = 1;
-      document.getElementById("inputQty_" + sanitizeId(nama)).value = 1;
-      renderCart();
-      autoCekMember();
-    }
+    script.src = SCRIPT_URL + "?action=getPendingOrders&callback=" + callbackName + "&t=" + new Date().getTime();
+    document.body.appendChild(script);
+  }
 
-    function hapusItem(index) {
-      keranjang.splice(index, 1);
-      renderCart();
-      autoCekMember();
-    }
+  function konfirmasiOrder(rowIndex, action) {
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: action, rowIndex: rowIndex })
+    }).then(() => {
+      setTimeout(loadData, 1000);
+    });
+  }
 
-    function renderCart() {
-      const container = document.getElementById("cartContainer");
-      if (keranjang.length === 0) {
-        container.innerHTML = `<p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 20px;">Belum ada menu dipilih.</p>`;
-        document.getElementById("txtSubtotal").innerText = "Rp 0";
-        document.getElementById("txtTotalBayar").innerText = "Rp 0";
-        return;
-      }
+  function renderMenuAccordions(menuList) {
+    const container = document.getElementById("accordionContainer");
+    container.innerHTML = "";
 
-      container.innerHTML = "";
-      let subtotal = 0;
+    const grouped = {};
+    KATEGORI_CONFIG.forEach(k => grouped[k.key] = []);
 
-      keranjang.forEach((item, idx) => {
-        subtotal += item.subtotal;
-        container.innerHTML += `
-          <div class="cart-row">
-            <div class="cart-row-left">
-              <button class="btn-del" onclick="hapusItem(${idx})"><i class="fa-solid fa-trash"></i></button>
-              <span>${item.produk} (x${item.qty})</span>
+    menuList.forEach(item => {
+      const catKey = deteksiKategori(item.produk);
+      if (grouped[catKey]) grouped[catKey].push(item);
+      else grouped["lainnya"].push(item);
+    });
+
+    KATEGORI_CONFIG.forEach((cfg, idx) => {
+      const items = grouped[cfg.key];
+      if (!items || items.length === 0) return;
+
+      const isCollapsed = idx !== 0 ? "collapsed" : ""; 
+      
+      let html = `
+        <div class="category-group ${isCollapsed}" id="catGroup_${cfg.key}">
+          <div class="category-header" style="background-color: ${cfg.color};" onclick="toggleAccordion('catGroup_${cfg.key}')">
+            <span><i class="fa-solid fa-tags"></i> ${cfg.title}</span>
+            <span>${items.length} opsi <i class="fa-solid fa-chevron-down"></i></span>
+          </div>
+          <div class="category-body">
+      `;
+
+      items.forEach(item => {
+        if (!stateQty[item.produk]) stateQty[item.produk] = 1;
+
+        html += `
+          <div class="card-item">
+            <div class="card-top">
+              <span class="item-title">${item.produk}</span>
+              <span class="item-badge">${item.isiPcs > 1 ? 'Isi ' + item.isiPcs + ' pcs' : 'Porsi'}</span>
             </div>
-            <b>Rp ${item.subtotal.toLocaleString("id-ID")}</b>
+            <div class="item-price">Rp ${item.harga.toLocaleString("id-ID")}</div>
+            <div class="item-stok">Maks: ${item.stok}</div>
+
+            <div class="qty-control">
+              <button class="qty-btn" onclick="updateTempQty('${item.produk}', -1)">-</button>
+              <input type="text" class="qty-input" id="inputQty_${sanitizeId(item.produk)}" value="${stateQty[item.produk]}" readonly>
+              <button class="qty-btn" onclick="updateTempQty('${item.produk}', 1)">+</button>
+            </div>
+
+            <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga})" ${item.stok <= 0 ? 'disabled style="opacity:0.5;"' : ''}>
+              ${item.stok <= 0 ? 'HABIS' : '+ TAMBAH'}
+            </button>
           </div>
         `;
       });
 
-      const diskon = Number(document.getElementById("inputDiskon").value) || 0;
-      const totalBayar = Math.max(0, subtotal - diskon);
-
-      document.getElementById("txtSubtotal").innerText = "Rp " + subtotal.toLocaleString("id-ID");
-      document.getElementById("txtTotalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
-    }
-
-    function prosesBayar() {
-      if (keranjang.length === 0) return alert("Keranjang masih kosong!");
-
-      const pelanggan = document.getElementById("custName").value || "Dine In / Nama";
-      const nomorWA = document.getElementById("custWA").value || "-";
-      const diskon = Number(document.getElementById("inputDiskon").value) || 0;
-
-      let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
-      let totalBayar = Math.max(0, subtotal - diskon);
-
-      // Logika stamp member
-      const member = localMembers.find(m => m.wa === nomorWA);
-      if (member) {
-        if (member.stamp >= 5) {
-          member.stamp = 0;
-        } else if (totalBayar >= 20000) {
-          member.stamp += 1;
-        }
-        saveLocalMembers();
-      }
-
-      const payload = {
-        action: "simpanTransaksi",
-        namaPelanggan: pelanggan,
-        nomorWA: nomorWA,
-        items: keranjang,
-        discount: diskon
-      };
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(() => {
-        document.getElementById("posModalNama").innerText = pelanggan;
-        document.getElementById("posModalWA").innerText = nomorWA;
-        document.getElementById("posModalTotal").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
-
-        const modal = document.getElementById("modalKasirSukses");
-        modal.style.display = "flex";
-
-        keranjang = [];
-        document.getElementById("inputDiskon").value = 0;
-        document.getElementById("custName").value = "Dine In / Nama";
-        document.getElementById("custWA").value = "";
-        document.getElementById("memberBadgeStatus").style.display = 'none';
-        renderCart();
-        setTimeout(loadData, 1000);
-      })
-      .catch(() => alert("Terjadi kesalahan koneksi."));
-    }
-
-    function tutupModalKasir() {
-      document.getElementById("modalKasirSukses").style.display = "none";
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      loadData();
-      setInterval(loadPendingOrders, 5000);
+      html += `</div></div>`;
+      container.innerHTML += html;
     });
-  </script>
+  }
+
+  function toggleAccordion(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  function sanitizeId(str) {
+    return str.replace(/[^a-zA-Z0-9]/g, "_");
+  }
+
+  function updateTempQty(nama, delta) {
+    if (!stateQty[nama]) stateQty[nama] = 1;
+    stateQty[nama] = Math.max(1, stateQty[nama] + delta);
+    document.getElementById("inputQty_" + sanitizeId(nama)).value = stateQty[nama];
+  }
+
+  function tambahKeKeranjang(nama, harga) {
+    const qtyPilih = stateQty[nama] || 1;
+    const ada = keranjang.find(i => i.produk === nama);
+
+    if (ada) {
+      ada.qty += qtyPilih;
+      ada.subtotal = ada.qty * harga;
+    } else {
+      keranjang.push({ produk: nama, harga: harga, qty: qtyPilih, subtotal: harga * qtyPilih });
+    }
+
+    stateQty[nama] = 1;
+    document.getElementById("inputQty_" + sanitizeId(nama)).value = 1;
+    renderCart();
+    autoCekMember();
+  }
+
+  function hapusItem(index) {
+    keranjang.splice(index, 1);
+    renderCart();
+    autoCekMember();
+  }
+
+  function renderCart() {
+    const container = document.getElementById("cartContainer");
+    if (keranjang.length === 0) {
+      container.innerHTML = `<p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 20px;">Belum ada menu dipilih.</p>`;
+      document.getElementById("txtSubtotal").innerText = "Rp 0";
+      document.getElementById("txtTotalBayar").innerText = "Rp 0";
+      return;
+    }
+
+    container.innerHTML = "";
+    let subtotal = 0;
+
+    keranjang.forEach((item, idx) => {
+      subtotal += item.subtotal;
+      container.innerHTML += `
+        <div class="cart-row">
+          <div class="cart-row-left">
+            <button class="btn-del" onclick="hapusItem(${idx})"><i class="fa-solid fa-trash"></i></button>
+            <span>${item.produk} (x${item.qty})</span>
+          </div>
+          <b>Rp ${item.subtotal.toLocaleString("id-ID")}</b>
+        </div>
+      `;
+    });
+
+    const diskon = Number(document.getElementById("inputDiskon").value) || 0;
+    const totalBayar = Math.max(0, subtotal - diskon);
+
+    document.getElementById("txtSubtotal").innerText = "Rp " + subtotal.toLocaleString("id-ID");
+    document.getElementById("txtTotalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+  }
+
+  function prosesBayar() {
+    if (keranjang.length === 0) return alert("Keranjang masih kosong!");
+
+    const pelanggan = document.getElementById("custName").value || "Dine In / Nama";
+    const nomorWA = document.getElementById("custWA").value || "-";
+    const diskon = Number(document.getElementById("inputDiskon").value) || 0;
+    let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+    let totalBayar = Math.max(0, subtotal - diskon);
+
+    const payload = {
+      action: "simpanTransaksi",
+      namaPelanggan: pelanggan,
+      nomorWA: nomorWA,
+      items: keranjang,
+      discount: diskon
+    };
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      document.getElementById("posModalNama").innerText = pelanggan;
+      document.getElementById("posModalWA").innerText = nomorWA;
+      document.getElementById("posModalTotal").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+
+      document.getElementById("modalKasirSukses").style.display = "flex";
+
+      keranjang = [];
+      document.getElementById("inputDiskon").value = 0;
+      document.getElementById("custName").value = "Dine In / Nama";
+      document.getElementById("custWA").value = "";
+      document.getElementById("memberBadgeStatus").style.display = 'none';
+      renderCart();
+      setTimeout(loadData, 1000);
+    })
+    .catch(() => alert("Terjadi kesalahan koneksi."));
+  }
+
+  function tutupModalKasir() {
+    document.getElementById("modalKasirSukses").style.display = "none";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+    setInterval(loadPendingOrders, 5000);
+  });
+</script>
 </body>
 </html>
