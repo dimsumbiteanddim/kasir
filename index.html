@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Kasir POS & Membership - BITE & DIM</title>
 
-  <!-- PEMANGGILAN MANIFEST.JSON DAN SW.JS -->
+  <!-- MANIFEST & SW -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121e28">
   <link rel="icon" type="image/x-icon" href="favicon.png">
@@ -25,13 +25,13 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #eef2f5; color: var(--text-main); overflow-x: hidden; padding-bottom: 75px; }
+    body { background-color: #eef2f5; color: var(--text-main); overflow-x: hidden; padding-bottom: 80px; }
 
     /* HEADER */
     header {
       background-color: var(--bg-dark);
       color: white;
-      padding: 8px 10px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -42,17 +42,17 @@
       top: 0;
       z-index: 30;
     }
-    .brand { display: flex; align-items: center; gap: 6px; }
-    .brand i { font-size: 18px; color: #3498db; }
-    .brand h1 { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand i { font-size: 20px; color: #3498db; }
+    .brand h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; }
     .brand span { font-size: 9px; background: #1a252f; padding: 2px 6px; border-radius: 8px; color: #2ecc71; margin-left: 4px; }
     
-    .header-controls { display: flex; align-items: center; gap: 6px; }
-    .omzet-box { background: #16a085; padding: 4px 8px; border-radius: 6px; text-align: right; }
+    .header-controls { display: flex; align-items: center; gap: 8px; }
+    .omzet-box { background: #16a085; padding: 4px 10px; border-radius: 6px; text-align: right; }
     .omzet-box .label { font-size: 8px; text-transform: uppercase; color: #e8f8f5; display: block; }
-    .omzet-box .value { font-size: 11px; font-weight: bold; }
+    .omzet-box .value { font-size: 12px; font-weight: bold; }
     
-    .btn-header { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px; }
+    .btn-header { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px; }
 
     /* TOMBOL INSTALL PWA */
     .btn-install-pwa {
@@ -76,77 +76,82 @@
     .modul-page.hidden { display: none !important; }
 
     /* LAYOUT MAIN KASIR */
-    .main-container { display: flex; gap: 6px; padding: 6px; max-width: 100%; margin: 0 auto; width: 100%; box-sizing: border-box; }
-    .left-panel { flex: 1; min-width: 0; }
-    .right-panel { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .main-container { display: flex; flex-direction: column; gap: 8px; padding: 8px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+    @media (min-width: 768px) {
+      .main-container { flex-direction: row; }
+    }
+    .left-panel { flex: 1.2; min-width: 0; }
+    .right-panel { flex: 0.8; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
     /* STOK SUMMARY */
-    .stok-bar { background: white; padding: 6px 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-    .stok-bar h3 { font-size: 11px; color: #444; }
-    .stok-indicators { font-size: 10px; font-weight: 600; color: #d35400; }
+    .stok-bar { background: white; padding: 8px 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .stok-bar h3 { font-size: 12px; color: #444; }
+    .stok-indicators { font-size: 11px; font-weight: 600; color: #d35400; }
 
     /* ACCORDION CATEGORIES */
-    .category-group { margin-bottom: 6px; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .category-header { padding: 8px 10px; color: white; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .category-body { background: white; padding: 6px; display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .category-group { margin-bottom: 8px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .category-header { padding: 10px 12px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .category-body { background: white; padding: 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
     .category-group.collapsed .category-body { display: none; }
 
     /* MENU CARD */
-    .card-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; background: #fff; position: relative; }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .card-item { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; background: #fff; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 4px; }
     .item-title { font-weight: bold; font-size: 11px; color: #2c3e50; line-height: 1.2; }
-    .item-badge { font-size: 8px; background: #fef5e7; color: #d35400; padding: 1px 4px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
-    .item-price { color: #2c3e50; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
-    .item-stok { font-size: 9px; color: #7f8c8d; text-align: right; margin-bottom: 4px; }
+    .item-badge { font-size: 8px; background: #fef5e7; color: #d35400; padding: 2px 4px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+    .item-price { color: #2c3e50; font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+    .item-stok { font-size: 9px; color: #7f8c8d; text-align: right; margin-bottom: 6px; }
 
-    .qty-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; }
-    .qty-btn { background: #f1f5f9; border: none; width: 24px; height: 22px; font-weight: bold; cursor: pointer; color: #475569; font-size: 11px; }
-    .qty-input { width: 100%; text-align: center; border: none; font-weight: bold; font-size: 11px; }
+    .qty-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+    .qty-btn { background: #f1f5f9; border: none; width: 30px; height: 28px; font-weight: bold; cursor: pointer; color: #475569; font-size: 13px; }
+    .qty-input { width: 100%; text-align: center; border: none; font-weight: bold; font-size: 12px; }
     
-    .btn-tambah { width: 100%; background: var(--orange-main); color: white; border: none; padding: 5px; border-radius: 4px; font-weight: bold; font-size: 10px; cursor: pointer; letter-spacing: 0.3px; }
+    .btn-tambah { width: 100%; background: var(--orange-main); color: white; border: none; padding: 7px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; letter-spacing: 0.3px; transition: opacity 0.2s; }
+    .btn-tambah:active { opacity: 0.8; }
 
     /* RIGHT PANEL CARDS */
-    .panel-card { background: white; border-radius: 6px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .panel-title { font-size: 11px; font-weight: bold; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .panel-card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .panel-title { font-size: 12px; font-weight: bold; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
     /* KASIR FORM & CART */
     .input-group-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-    .input-group-row input { width: 100%; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 10px; }
+    .input-group-row input { width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
 
     /* INTEGRASI CHECK MEMBER BOX */
-    .member-check-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 6px; margin-bottom: 8px; }
-    .member-check-box label { font-size: 9px; font-weight: bold; color: #166534; display: block; margin-bottom: 2px; }
-    .member-input-group { display: flex; gap: 4px; }
-    .member-input-group input { flex: 1; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 10px; }
-    .btn-cek-member { background: #16a085; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 10px; cursor: pointer; }
-    .member-badge-status { margin-top: 4px; font-size: 9px; font-weight: bold; background: #dcfce7; color: #15803d; padding: 4px; border-radius: 4px; display: none; }
+    .member-check-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    .member-check-box label { font-size: 10px; font-weight: bold; color: #166534; display: block; margin-bottom: 4px; }
+    .member-input-group { display: flex; gap: 6px; }
+    .member-input-group input { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
+    .btn-cek-member { background: #16a085; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; }
+    .member-badge-status { margin-top: 6px; font-size: 10px; font-weight: bold; background: #dcfce7; color: #15803d; padding: 6px; border-radius: 6px; display: none; line-height: 1.4; }
 
-    .cart-list { max-height: 140px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
-    .cart-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; }
-    .cart-row-left { display: flex; align-items: center; gap: 4px; overflow: hidden; }
-    .cart-row-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
-    .btn-del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 10px; }
+    .cart-list { max-height: 180px; overflow-y: auto; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .cart-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 6px; }
+    .cart-row-left { display: flex; align-items: center; gap: 6px; overflow: hidden; }
+    .cart-row-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+    .btn-del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; padding: 2px 4px; }
     
-    .summary-line { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; color: #64748b; }
-    .summary-line.total { font-size: 12px; font-weight: bold; color: var(--orange-dark); border-top: 1px solid #e2e8f0; padding-top: 4px; margin-top: 4px; }
-    .discount-input { width: 60px; text-align: right; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 4px; font-size: 10px; }
+    .summary-line { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #64748b; }
+    .summary-line.total { font-size: 13px; font-weight: bold; color: var(--orange-dark); border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 6px; }
+    .discount-input { width: 80px; text-align: right; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; font-size: 11px; }
 
-    .btn-proses { width: 100%; background: #059669; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 6px; display: flex; justify-content: center; align-items: center; gap: 4px; }
+    .btn-proses { width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(5,150,105,0.2); }
+    .btn-proses:active { transform: scale(0.98); }
 
     /* LAYOUT MODUL MEMBERSHIP */
-    .member-container { padding: 8px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-    .member-card { background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .member-card h3 { font-size: 12px; font-weight: bold; margin-bottom: 8px; color: var(--bg-dark); }
-    .form-group { margin-bottom: 6px; }
-    .form-group label { font-size: 10px; font-weight: bold; display: block; margin-bottom: 2px; }
-    .form-group input { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; }
-    .btn-simpan-member { background: #27ae60; color: white; border: none; width: 100%; padding: 8px; font-weight: bold; border-radius: 6px; font-size: 11px; cursor: pointer; margin-top: 4px; }
+    .member-container { padding: 10px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .member-card { background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .member-card h3 { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: var(--bg-dark); }
+    .form-group { margin-bottom: 8px; }
+    .form-group label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; }
+    .form-group input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
+    .btn-simpan-member { background: #27ae60; color: white; border: none; width: 100%; padding: 10px; font-weight: bold; border-radius: 6px; font-size: 12px; cursor: pointer; margin-top: 6px; }
     
-    .table-member { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; }
-    .table-member th { background: #f8fafc; padding: 6px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: bold; }
-    .table-member td { padding: 6px; border-bottom: 1px solid #f1f5f9; }
+    .table-member { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+    .table-member th { background: #f8fafc; padding: 8px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: bold; }
+    .table-member td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-    /* 📌 BOTTOM NAVIGATION BAR (CIRCLE K STYLE) */
+    /* BOTTOM NAVIGATION BAR (CIRCLE K STYLE) */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -156,7 +161,7 @@
       border-top: 1px solid #cbd5e1;
       box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
       z-index: 99;
-      padding: 4px 20px;
+      padding: 6px 20px;
     }
     .bottom-nav-container {
       max-width: 450px;
@@ -180,12 +185,11 @@
       width: 60px;
     }
     .nav-item.active { color: #d35400; }
-    .nav-item i { font-size: 16px; }
+    .nav-item i { font-size: 18px; }
 
-    /* TOMBOL MELAYANG QR CODE */
-    .nav-qr-wrapper { position: relative; top: -14px; display: flex; flex-direction: column; align-items: center; }
+    /* TOMBOL MELAYANG QR CODE (FIXED CSS) */
+    .nav-qr-wrapper { position: relative; top: -16px; display: flex; flex-direction: column; align-items: center; }
     .btn-qr-floating {
-      width: 48 h-48;
       width: 48px;
       height: 48px;
       background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
@@ -217,7 +221,6 @@
       <span>Live Sync Dapur</span>
     </div>
     <div class="header-controls">
-      <!-- TOMBOL INSTALL PWA -->
       <button id="btnInstallPwa" class="btn-install-pwa" onclick="installPWA()">
         <i class="fa-solid fa-download"></i> Install App
       </button>
@@ -230,9 +233,7 @@
     </div>
   </header>
 
-  <!-- ===================================== -->
-  <!-- 🛒 MODUL 1: KASIR Utama               -->
-  <!-- ===================================== -->
+  <!-- MODUL 1: KASIR Utama -->
   <div id="modulKasir" class="modul-page">
     <div class="main-container">
       <!-- LEFT PANEL: MENU -->
@@ -255,7 +256,7 @@
         <!-- PESANAN ONLINE PENDING -->
         <div class="panel-card" style="background: #fffdf5; border: 1px solid #fef3c7;">
           <div class="panel-title" style="color: #b45309;">
-            <span><i class="fa-solid fa-bolt"></i> Pesanan Online <span class="online-badge" id="onlineCount">0</span></span>
+            <span><i class="fa-solid fa-bolt"></i> Pesanan Online <span class="online-badge" id="onlineCount" style="background: #f59e0b; color: white; padding: 1px 6px; border-radius: 10px; font-size: 10px;">0</span></span>
             <small style="color: #d97706; font-weight: normal;">Sync 5s</small>
           </div>
           <div id="onlinePendingList">
@@ -274,7 +275,7 @@
           <div class="member-check-box">
             <label><i class="fa-solid fa-id-card"></i> Cek / Input WA Member</label>
             <div class="member-input-group">
-              <input type="tel" id="custWA" placeholder="08xxx (Member WA)" onchange="autoCekMember()">
+              <input type="tel" id="custWA" placeholder="08xxx (Member WA)" onkeyup="autoCekMember()">
               <button class="btn-cek-member" onclick="autoCekMember()">Cari</button>
             </div>
             <div id="memberBadgeStatus" class="member-badge-status"></div>
@@ -307,12 +308,9 @@
     </div>
   </div>
 
-  <!-- ===================================== -->
-  <!-- 👤 MODUL 2: MEMBERSHIP SYSTEM         -->
-  <!-- ===================================== -->
+  <!-- MODUL 2: MEMBERSHIP SYSTEM -->
   <div id="modulMember" class="modul-page hidden">
     <div class="member-container">
-      <!-- FORM INPUT MEMBER BARU -->
       <div class="member-card">
         <h3><i class="fa-solid fa-user-plus"></i> Registrasi Member Setia</h3>
         <form onsubmit="simpanMemberBaru(event)">
@@ -330,7 +328,6 @@
         </form>
       </div>
 
-      <!-- DATABASE MEMBER -->
       <div class="member-card">
         <h3><i class="fa-solid fa-users"></i> Database Member (Loyalty 10%)</h3>
         <div style="overflow-x: auto;">
@@ -352,28 +349,26 @@
     </div>
   </div>
 
- <!-- 📱 MODAL QRIS TOKO -->
-<div id="modalQrScanner" style="display: none; position: fixed; inset: 0; background: rgba(18,30,40,0.8); z-index: 999; align-items: center; justify-content: center;">
-  <div style="background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-    <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;"><i class="fa-solid fa-qrcode"></i> QRIS Pembayaran</h3>
-    <p style="font-size: 12px; color: #64748b; margin-bottom: 16px;">Scan QRIS di bawah ini untuk melakukan pembayaran</p>
-    
-    <!-- Gambar QRIS Toko -->
-    <div style="width: 100%; padding: 10px; background: #fff; border: 2px dashed #f97316; border-radius: 12px; margin-bottom: 16px; box-sizing: border-box;">
-      <img src="https://lh3.googleusercontent.com/d/1_N38UgZgpj6zno0LGjQj74vHk4xh7x_Q" alt="QRIS Toko" style="width: 100%; height: auto; display: block; border-radius: 8px;">
+  <!-- MODAL QRIS TOKO -->
+  <div id="modalQrScanner" style="display: none; position: fixed; inset: 0; background: rgba(18,30,40,0.8); z-index: 999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+      <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;"><i class="fa-solid fa-qrcode"></i> QRIS Pembayaran</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 16px;">Scan QRIS di bawah ini untuk melakukan pembayaran</p>
+      
+      <div style="width: 100%; padding: 10px; background: #fff; border: 2px dashed #f97316; border-radius: 12px; margin-bottom: 16px; box-sizing: border-box;">
+        <img src="https://lh3.googleusercontent.com/d/1_N38UgZgpj6zno0LGjQj74vHk4xh7x_Q" alt="QRIS Toko" style="width: 100%; height: auto; display: block; border-radius: 8px;">
+      </div>
+
+      <button onclick="tutupModalQR()" style="background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
+        TUTUP
+      </button>
     </div>
-
-    <button onclick="tutupModalQR()" style="background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
-      TUTUP
-    </button>
   </div>
-</div>
 
-  <!-- 📢 MODAL NOTIFIKASI TRANSAKSI BERHASIL -->
+  <!-- MODAL NOTIFIKASI TRANSAKSI BERHASIL -->
   <div id="modalKasirSukses" style="display: none; position: fixed; inset: 0; background-color: rgba(18, 30, 40, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
     <div style="background: #ffffff; width: 100%; max-width: 360px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #a7f3d0; animation: modalPop 0.3s ease-out;">
       
-      <!-- HEADER HIJAU GRADASI -->
       <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 20px; text-align: center; color: #ffffff;">
         <div style="width: 54px; height: 54px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.4);">
           <i class="fa-solid fa-check" style="color: #ffffff;"></i>
@@ -382,7 +377,6 @@
         <p style="font-size: 11px; opacity: 0.9; margin-top: 4px; font-weight: 500;">Data penjualan telah tersimpan ke sistem.</p>
       </div>
 
-      <!-- BODY & RINGKASAN STRUK -->
       <div style="padding: 16px;">
         <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px; font-size: 11px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px dashed #a7f3d0;">
@@ -399,7 +393,6 @@
           </div>
         </div>
 
-        <!-- TOMBOL AKSI HIJAU -->
         <button onclick="tutupModalKasir()" style="width: 100%; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform 0.1s ease; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
           <i class="fa-solid fa-check-circle"></i> TRANSAKSI BARU / SIAP
         </button>
@@ -407,24 +400,21 @@
     </div>
   </div>
 
-  <!-- 📌 BOTTOM NAVIGATION BAR (STYLE CIRCLE K) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="bottom-nav-container">
-      <!-- KASIR -->
       <button onclick="switchPage('kasir')" id="navKasir" class="nav-item active">
         <i class="fa-solid fa-cash-register"></i>
         <span>Kasir</span>
       </button>
 
-      <!-- QR CODE (FLOATING) -->
       <div class="nav-qr-wrapper">
         <button onclick="bukaModalQR()" class="btn-qr-floating">
           <i class="fa-solid fa-qrcode"></i>
         </button>
-        <span style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">Qr Code</span>
+        <span style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">QRIS</span>
       </div>
 
-      <!-- MEMBER -->
       <button onclick="switchPage('member')" id="navMember" class="nav-item">
         <i class="fa-solid fa-id-card"></i>
         <span>Member</span>
@@ -433,34 +423,37 @@
   </nav>
 
   <script>
-    // 📲 LOGIKA PWA & INSTALL PROMPT
+    // 📲 INSIALISASI VARIABEL & LOCALSTORAGE MEMBER
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
+
+    let keranjang = [];
+    let stateQty = {};
+    
+    // Simpan local member di localStorage browser
+    let localMembers = JSON.parse(localStorage.getItem('bite_dim_members') || '[]');
+
+    function saveLocalMembers() {
+      localStorage.setItem('bite_dim_members', JSON.stringify(localMembers));
+    }
+
+    // PWA & INSTALL PROMPT LOGIC
     let deferredPrompt;
     const btnInstallPwa = document.getElementById('btnInstallPwa');
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      if (btnInstallPwa) {
-        btnInstallPwa.style.display = 'flex';
-      }
+      if (btnInstallPwa) btnInstallPwa.style.display = 'flex';
     });
 
     function installPWA() {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User menerima instalasi PWA');
-        }
+      deferredPrompt.userChoice.then(() => {
         deferredPrompt = null;
         if (btnInstallPwa) btnInstallPwa.style.display = 'none';
       });
     }
-
-    window.addEventListener('appinstalled', () => {
-      if (btnInstallPwa) btnInstallPwa.style.display = 'none';
-      deferredPrompt = null;
-    });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -469,14 +462,8 @@
           .catch((err) => console.error('SW Register Error:', err));
       });
     }
-    
-    // URL GOOGLE APPS SCRIPT
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
 
-    let keranjang = [];
-    let stateQty = {};
-
-    // MAPPING ACCORDION DENGAN KATEGORI BUNDLING DI DEPAN
+    // CONFIG KATEGORI MENU
     const KATEGORI_CONFIG = [
       { key: "bundling", title: "🔥 PAKET BUNDLING PROMO", color: "#8e44ad" },
       { key: "original", title: "Dimsum Original", color: "#f39c12" },
@@ -488,7 +475,7 @@
       { key: "lainnya", title: "Menu Lainnya", color: "#2c3e50" }
     ];
 
-    // LOGIKA PINDAH MODUL TAB
+    // NAVIGATION TAB
     function switchPage(modul) {
       const mKasir = document.getElementById('modulKasir');
       const mMember = document.getElementById('modulMember');
@@ -512,11 +499,10 @@
       }
     }
 
-    // SCANNER MODAL TOGGLE
     function bukaModalQR() { document.getElementById('modalQrScanner').style.display = 'flex'; }
     function tutupModalQR() { document.getElementById('modalQrScanner').style.display = 'none'; }
 
-    // INTEGRASI LOGIKA MEMBERSHIP
+    // LOGIKA MEMBERSHIP
     function autoCekMember() {
       const wa = document.getElementById("custWA").value.trim();
       const badge = document.getElementById("memberBadgeStatus");
@@ -530,11 +516,11 @@
       if (found) {
         document.getElementById("custName").value = found.nama;
         badge.style.display = 'block';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
 
         if (found.stamp >= 5) {
           badge.innerHTML = `⭐ Member: <b>${found.nama}</b> (${found.stamp}/5 Stamp)<br><b style="color:#d97706;">🎉 Transaksi ke-6: Siap Diskon 10%!</b>`;
-          
-          // Hitung otomatis diskon 10% jika subtotal > 0
           let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
           if (subtotal > 0) {
             document.getElementById("inputDiskon").value = Math.round(subtotal * 0.1);
@@ -562,6 +548,7 @@
       }
 
       localMembers.push({ nama: nama, wa: wa, stamp: 0 });
+      saveLocalMembers();
       alert(`Member ${nama} berhasil didaftarkan!`);
       document.getElementById("mNama").value = "";
       document.getElementById("mWA").value = "";
@@ -580,7 +567,7 @@
             <td>⭐ ${m.stamp}/5</td>
             <td>
               <span style="padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px; ${isReady ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;'}">
-                ${isReady ? '🎉 Diskon 10% Ready' : 'Pengumpulan'}
+                ${isReady ? '🎉 Diskon 10% Ready' : 'Pengumpulkan'}
               </span>
             </td>
           </tr>
@@ -614,7 +601,7 @@
           document.getElementById("loadingMenu").innerHTML = "<p style='color:red;'>Error: " + data.message + "</p>";
         }
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (script.parentNode) script.parentNode.removeChild(script);
       };
 
       script.src = SCRIPT_URL + "?action=getStok&callback=" + callbackName + "&t=" + new Date().getTime();
@@ -640,20 +627,20 @@
           container.innerHTML = "";
           orders.forEach(ord => {
             container.innerHTML += `
-              <div class="pending-item">
+              <div style="background:#ffffff; border:1px solid #fde68a; padding:8px; border-radius:6px; margin-bottom:6px; font-size:11px;">
                 <b>${ord.namaPelanggan}</b> (${ord.nomorWA})<br>
                 <span style="color:#555;">${ord.produk}</span><br>
                 <b>Total: Rp ${Number(ord.totalHarga).toLocaleString("id-ID")}</b>
-                <div class="pending-actions">
-                  <button class="btn-sm btn-acc" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
-                  <button class="btn-sm btn-dec" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
+                <div style="display:flex; gap:4px; margin-top:4px;">
+                  <button style="background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'completeOrder')">Selesaikan</button>
+                  <button style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;" onclick="konfirmasiOrder(${ord.rowIndex}, 'cancelOrder')">Batal</button>
                 </div>
               </div>
             `;
           });
         }
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (script.parentNode) script.parentNode.removeChild(script);
       };
 
       script.src = SCRIPT_URL + "?action=getPendingOrders&callback=" + callbackName + "&t=" + new Date().getTime();
@@ -663,11 +650,11 @@
     function konfirmasiOrder(rowIndex, action) {
       fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: action, rowIndex: rowIndex })
-      })
-      .then(res => res.json())
-      .then(data => {
-        loadData();
+      }).then(() => {
+        setTimeout(loadData, 1000);
       });
     }
 
@@ -717,7 +704,7 @@
                 <button class="qty-btn" onclick="updateTempQty('${item.produk}', 1)">+</button>
               </div>
 
-              <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga})" ${item.stok <= 0 ? 'disabled' : ''}>
+              <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga})" ${item.stok <= 0 ? 'disabled style="opacity:0.5;"' : ''}>
                 ${item.stok <= 0 ? 'HABIS' : '+ TAMBAH'}
               </button>
             </div>
@@ -730,15 +717,7 @@
     }
 
     function toggleAccordion(id) {
-      const allGroups = document.querySelectorAll('.category-group');
       const targetGroup = document.getElementById(id);
-
-      allGroups.forEach(group => {
-        if (group !== targetGroup) {
-          group.classList.add('collapsed');
-        }
-      });
-
       targetGroup.classList.toggle('collapsed');
     }
 
@@ -766,7 +745,7 @@
       stateQty[nama] = 1;
       document.getElementById("inputQty_" + sanitizeId(nama)).value = 1;
       renderCart();
-      autoCekMember(); // Re-evaluate diskon jika member aktif
+      autoCekMember();
     }
 
     function hapusItem(index) {
@@ -817,17 +796,19 @@
       let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
       let totalBayar = Math.max(0, subtotal - diskon);
 
-      // Tambahkan Logika Stamp Member jika terdaftar & total belanja >= Rp 20.000
+      // Logika stamp member
       const member = localMembers.find(m => m.wa === nomorWA);
       if (member) {
         if (member.stamp >= 5) {
-          member.stamp = 0; // Reset stamp setelah dapat diskon ke-6
+          member.stamp = 0;
         } else if (totalBayar >= 20000) {
-          member.stamp += 1; // +1 Stamp jika belanja min 20rb
+          member.stamp += 1;
         }
+        saveLocalMembers();
       }
 
       const payload = {
+        action: "simpanTransaksi",
         namaPelanggan: pelanggan,
         nomorWA: nomorWA,
         items: keranjang,
@@ -836,30 +817,27 @@
 
       fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          document.getElementById("posModalNama").innerText = pelanggan;
-          document.getElementById("posModalWA").innerText = nomorWA;
-          document.getElementById("posModalTotal").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
+      .then(() => {
+        document.getElementById("posModalNama").innerText = pelanggan;
+        document.getElementById("posModalWA").innerText = nomorWA;
+        document.getElementById("posModalTotal").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
 
-          const modal = document.getElementById("modalKasirSukses");
-          modal.style.display = "flex";
+        const modal = document.getElementById("modalKasirSukses");
+        modal.style.display = "flex";
 
-          keranjang = [];
-          document.getElementById("inputDiskon").value = 0;
-          document.getElementById("custName").value = "Dine In / Nama";
-          document.getElementById("custWA").value = "";
-          document.getElementById("memberBadgeStatus").style.display = 'none';
-          renderCart();
-          loadData();
-        } else {
-          alert("Gagal: " + data.message);
-        }
+        keranjang = [];
+        document.getElementById("inputDiskon").value = 0;
+        document.getElementById("custName").value = "Dine In / Nama";
+        document.getElementById("custWA").value = "";
+        document.getElementById("memberBadgeStatus").style.display = 'none';
+        renderCart();
+        setTimeout(loadData, 1000);
       })
-      .catch(err => alert("Terjadi kesalahan koneksi."));
+      .catch(() => alert("Terjadi kesalahan koneksi."));
     }
 
     function tutupModalKasir() {
