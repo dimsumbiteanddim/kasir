@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Kasir POS & Membership - BITE & DIM</title>
+  <title>Aplikasi Kasir POS & Membership - BITE & DIM Multi-Outlet</title>
 
   <!-- MANIFEST & SW -->
   <link rel="manifest" href="manifest.json">
@@ -53,6 +53,19 @@
     .omzet-box .value { font-size: 12px; font-weight: bold; }
     
     .btn-header { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px; }
+
+    /* INTEGRASI MULTI-OUTLET: STYLE DROPDOWN */
+    .select-outlet {
+      background: #e67e22;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      outline: none;
+    }
 
     /* TOMBOL INSTALL PWA */
     .btn-install-pwa {
@@ -260,6 +273,12 @@
       <span>Live Sync Dapur</span>
     </div>
     <div class="header-controls">
+      <!-- INTEGRASI MULTI-OUTLET: DROPDOWN CABANG -->
+      <select id="selectOutlet" class="select-outlet" onchange="gantiOutlet()">
+        <option value="OUT-001">📍 Kelayan</option>
+        <option value="OUT-002">📍 Veteran</option>
+      </select>
+
       <button id="btnInstallPwa" class="btn-install-pwa" onclick="installPWA()">
         <i class="fa-solid fa-download"></i> Install App
       </button>
@@ -325,6 +344,14 @@
 
           <div class="input-group-row">
             <input type="text" id="custName" placeholder="Dine In / Nama" value="Dine In / Nama">
+          </div>
+
+          <!-- INTEGRASI MULTI-OUTLET: METODE PEMBAYARAN -->
+          <div class="input-group-row">
+            <select id="metodeBayarPOS" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: bold;">
+              <option value="Cash">Cash / Tunai</option>
+              <option value="QRIS">QRIS</option>
+            </select>
           </div>
 
           <div class="cart-list" id="cartContainer">
@@ -470,7 +497,30 @@
   </nav>
 
   <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxijavfFwCPC4BrH2-hYpZIN2tJuhfN4hmLo9eGRxKCkVnPGZXPF8CtXIqrzsNGUtOqmA/exec"; 
+  // 1. DAFTAR URL WEB APP APPS SCRIPT SETIAP CABANG
+  const OUTLET_URLS = {
+    "OUT-001": "https://script.google.com/macros/s/AKfycbzd0oQiSvldBUtdGbED1cJUkIHn1ErGdcX9ZG1vFEpnXnMZuZfMEU8xkaa2zMSQrCoYBQ/exec", // Cabang 1 (Kelayan)
+    "OUT-002": "PASTE_URL_WEB_APP_CABANG_VETERAN_DISINI"                                                                     // Cabang 2 (Veteran)
+  };
+
+  // 2. CEK PILIHAN CABANG & TARGET URL
+  let currentOutlet = localStorage.getItem("selectedOutlet") || "OUT-001";
+  document.getElementById("selectOutlet").value = currentOutlet;
+  let SCRIPT_URL = OUTLET_URLS[currentOutlet] || OUTLET_URLS["OUT-001"];
+
+  // 3. FUNGSI GANTI OUTLET SECARA DINAMIS
+  function gantiOutlet() {
+    currentOutlet = document.getElementById("selectOutlet").value;
+    localStorage.setItem("selectedOutlet", currentOutlet);
+    
+    // Switch URL sesuai cabang
+    SCRIPT_URL = OUTLET_URLS[currentOutlet] || OUTLET_URLS["OUT-001"];
+    
+    // Reset & Muat Ulang Data Cabang Baru
+    document.getElementById("loadingMenu").style.display = "block";
+    document.getElementById("accordionContainer").innerHTML = "";
+    loadData();
+  }
 
   let keranjang = [];
   let stateQty = {};
@@ -797,7 +847,8 @@
               <button class="qty-btn" onclick="updateTempQty('${item.produk}', 1)">+</button>
             </div>
 
-            <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga})" ${item.stok <= 0 ? 'disabled style="opacity:0.5;"' : ''}>
+            <!-- INTEGRASI MULTI-OUTLET: MENGIRIM PARAMETER HPP KE KERANJANG -->
+            <button class="btn-tambah" style="background:${cfg.color};" onclick="tambahKeKeranjang('${item.produk}', ${item.harga}, ${item.hpp || 0})" ${item.stok <= 0 ? 'disabled style="opacity:0.5;"' : ''}>
               ${item.stok <= 0 ? 'HABIS' : '+ TAMBAH'}
             </button>
           </div>
@@ -810,19 +861,17 @@
   }
 
   function toggleAccordion(id) {
-  const target = document.getElementById(id);
-  const isAlreadyOpen = !target.classList.contains('collapsed');
+    const target = document.getElementById(id);
+    const isAlreadyOpen = !target.classList.contains('collapsed');
 
-  // 1. Tutup (kempiskan) semua kategori
-  document.querySelectorAll('.category-group').forEach(group => {
-    group.classList.add('collapsed');
-  });
+    document.querySelectorAll('.category-group').forEach(group => {
+      group.classList.add('collapsed');
+    });
 
-  // 2. Jika kategori yang diklik tadinya tertutup, buka kategori tersebut
-  if (!isAlreadyOpen) {
-    target.classList.remove('collapsed');
+    if (!isAlreadyOpen) {
+      target.classList.remove('collapsed');
+    }
   }
-}
 
   function sanitizeId(str) {
     return str.replace(/[^a-zA-Z0-9]/g, "_");
@@ -834,7 +883,8 @@
     document.getElementById("inputQty_" + sanitizeId(nama)).value = stateQty[nama];
   }
 
-  function tambahKeKeranjang(nama, harga) {
+  // INTEGRASI MULTI-OUTLET: MENYIMPAN HPP ITEM
+  function tambahKeKeranjang(nama, harga, hpp) {
     const qtyPilih = stateQty[nama] || 1;
     const ada = keranjang.find(i => i.produk === nama);
 
@@ -842,7 +892,13 @@
       ada.qty += qtyPilih;
       ada.subtotal = ada.qty * harga;
     } else {
-      keranjang.push({ produk: nama, harga: harga, qty: qtyPilih, subtotal: harga * qtyPilih });
+      keranjang.push({ 
+        produk: nama, 
+        harga: harga, 
+        hpp: hpp || (harga * 0.5), 
+        qty: qtyPilih, 
+        subtotal: harga * qtyPilih 
+      });
     }
 
     stateQty[nama] = 1;
@@ -898,6 +954,7 @@
     document.getElementById("txtTotalBayar").innerText = "Rp " + totalBayar.toLocaleString("id-ID");
   }
 
+  // INTEGRASI MULTI-OUTLET: MENGIRIM PARAMETER outlet_id & pembayaran
   function prosesBayar() {
     if (keranjang.length === 0) return alert("Keranjang masih kosong!");
 
@@ -911,11 +968,16 @@
     const pelanggan = document.getElementById("custName").value || "Dine In / Nama";
     const nomorWA = document.getElementById("custWA").value || "-";
     const diskon = Number(document.getElementById("inputDiskon").value) || 0;
+    const metodeBayar = document.getElementById("metodeBayarPOS").value;
+
     let subtotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
     let totalBayar = Math.max(0, subtotal - diskon);
 
     const payload = {
       action: "simpanTransaksi",
+      outlet_id: currentOutlet,
+      kasirNama: "Kasir Utama",
+      pembayaran: metodeBayar,
       namaPelanggan: pelanggan,
       nomorWA: nomorWA,
       items: keranjang,
